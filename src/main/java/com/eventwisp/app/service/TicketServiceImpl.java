@@ -1,5 +1,6 @@
 package com.eventwisp.app.service;
 
+import com.eventwisp.app.dto.TicketTypeUpdateDto;
 import com.eventwisp.app.dto.TicketUpdateDto;
 import com.eventwisp.app.dto.response.TicketUpdateResponse;
 import com.eventwisp.app.entity.Ticket;
@@ -31,6 +32,12 @@ public class TicketServiceImpl implements TicketService {
     @Override
     public Ticket findTicketById(Long id) {
         return ticketRepository.findById(id).orElse(null);
+    }
+
+    //Find tickets by event
+    @Override
+    public List<Ticket> findTicketsByEvent(Long id) {
+        return ticketRepository.findTicketsByEvent(id);
     }
 
     //Update existing ticket's details
@@ -111,6 +118,25 @@ public class TicketServiceImpl implements TicketService {
             }
         }
         return responseList;
+    }
+
+    //Update ticket type
+    @Override
+    @Transactional
+    public Ticket updateTicketType(Long id, TicketTypeUpdateDto ticketTypeUpdateDto) {
+
+        //Check if the ticket exists
+        Ticket ticketType=ticketRepository.findById(id).orElse(null);
+
+        if(ticketType==null){
+            return null;
+        }
+
+        ticketType.setTicketType(ticketTypeUpdateDto.getTicketType());
+        ticketType.setTicketCount(ticketTypeUpdateDto.getTicketCount());
+        ticketType.setPrice(ticketTypeUpdateDto.getPrice());
+
+        return ticketRepository.save(ticketType);
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.eventwisp.app.controller;
 
 import com.eventwisp.app.dto.SessionDto;
 import com.eventwisp.app.dto.SessionUpdateDto;
+import com.eventwisp.app.dto.response.FindSessionByEventResponse;
 import com.eventwisp.app.entity.Session;
 import com.eventwisp.app.service.SessionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +52,24 @@ public class SessionController {
             }
 
             return ResponseEntity.status(HttpStatus.OK).body(sessionList);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    //Find session by eventId
+    @GetMapping("/events/{eventId}/sessions")
+    public ResponseEntity<?> findSessionsByEvent(@PathVariable Long eventId){
+        try{
+            // Find session by id
+            FindSessionByEventResponse response= sessionService.findSessionsByEvent(eventId);
+
+            //check if the session list is empty
+            if(response.getSessionList().isEmpty()){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response.getMessage());
+            }
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }

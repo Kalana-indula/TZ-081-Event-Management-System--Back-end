@@ -1,5 +1,6 @@
 package com.eventwisp.app.service;
 
+import com.eventwisp.app.dto.TicketTypeUpdateDto;
 import com.eventwisp.app.dto.TicketUpdateDto;
 import com.eventwisp.app.dto.response.TicketUpdateResponse;
 import com.eventwisp.app.entity.Ticket;
@@ -16,8 +17,14 @@ public interface TicketService {
     //find a ticket type by id
     Ticket findTicketById(Long id);
 
+    //Find tickets by event
+    List<Ticket> findTicketsByEvent(Long id);
+
     //update the ticket details
     List<TicketUpdateResponse> updateTicket(List<TicketUpdateDto> ticketData);
+
+    //Update ticket type
+    Ticket updateTicketType(Long id, TicketTypeUpdateDto ticketTypeUpdateDto);
 
     //delete an existing ticket type
     Boolean deleteTicket(Long id);
