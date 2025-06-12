@@ -1,0 +1,37 @@
+package com.eventwisp.app.entity;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+
+@Entity
+@Table(name = "session")
+@Setter
+@Getter
+public class Session {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Long id;
+
+    @Column(name = "venue")
+    private String venue;
+
+    @Column(name = "date")
+    private LocalDate date;
+
+    @Column(name = "start_time")
+    private LocalTime startTime;
+
+    @Column(name = "end_time")
+    private LocalTime endTime;
+
+    //Event
+    @ManyToOne
+    @JoinColumn(name = "event_id")
+    private Event event;
+}
