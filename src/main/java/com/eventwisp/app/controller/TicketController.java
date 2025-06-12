@@ -1,5 +1,6 @@
 package com.eventwisp.app.controller;
 
+import com.eventwisp.app.dto.TicketTypeUpdateDto;
 import com.eventwisp.app.dto.TicketUpdateDto;
 import com.eventwisp.app.dto.response.TicketUpdateResponse;
 import com.eventwisp.app.entity.Ticket;
@@ -55,11 +56,42 @@ public class TicketController {
         }
     }
 
+    //Find ticket by event
+    @GetMapping("/events/{id}/tickets")
+    public ResponseEntity<?> findTicketByEvent(@PathVariable Long id){
+        try{
+            List<Ticket> ticketList=ticketService.findTicketsByEvent(id);
+
+            if(ticketList.isEmpty()){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No tickets found");
+            }
+
+            return ResponseEntity.status(HttpStatus.OK).body(ticketList);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
     //Update tickets
     @PutMapping("/tickets")
     public ResponseEntity<?> updateTicket(@RequestBody List<TicketUpdateDto> ticketUpdateDtoList){
         List<TicketUpdateResponse> ticketUpdateResponses=ticketService.updateTicket(ticketUpdateDtoList);
         return ResponseEntity.status(HttpStatus.OK).body(ticketUpdateResponses);
+    }
+
+    //Update a ticket type
+    @PutMapping("/tickets/{id}")
+    public ResponseEntity<?> updateTicketType(@PathVariable Long id,@RequestBody TicketTypeUpdateDto ticketTypeUpdateDto){
+        try{
+            Ticket updatedTicket= ticketService.updateTicketType(id,ticketTypeUpdateDto);
+
+            if(updatedTicket==null){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No ticket type found");
+            }
+            return ResponseEntity.status(HttpStatus.OK).body(updatedTicket);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
     }
 
     //Delete ticket
