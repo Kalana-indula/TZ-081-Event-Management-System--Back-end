@@ -2,12 +2,14 @@ package com.eventwisp.app.service;
 
 import com.eventwisp.app.dto.SessionDto;
 import com.eventwisp.app.dto.SessionUpdateDto;
+import com.eventwisp.app.dto.response.FindSessionByEventResponse;
 import com.eventwisp.app.entity.Event;
 import com.eventwisp.app.entity.Session;
 import com.eventwisp.app.repository.EventRepository;
 import com.eventwisp.app.repository.SessionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -28,6 +30,7 @@ public class SessionServiceImpl implements SessionService{
 
     //create new session
     @Override
+    @Transactional
     public Session createSession(SessionDto sessionDto) {
 
         Event existingEvent=eventRepository.findById(sessionDto.getEventId()).orElse(null);
@@ -55,13 +58,38 @@ public class SessionServiceImpl implements SessionService{
         return sessionRepository.findAll();
     }
 
+    //Find all sessions relevant to an event
     @Override
-    public List<Session> findSessionByEvent(Long eventId) {
-        return List.of();
+    public FindSessionByEventResponse findSessionsByEvent(Long eventId) {
+
+        //Create new response object
+        FindSessionByEventResponse response=new FindSessionByEventResponse();
+
+        //Check if there is an event for relevant id
+        boolean isExist=eventRepository.existsById(eventId);
+
+        if(!isExist){
+            response.setMessage("No relevant event found for entered id");
+            return response;
+        }
+
+        //Get a session list
+        List<Session> sessions=sessionRepository.findSessionsByEvent(eventId);
+
+        if(sessions.isEmpty()){
+            response.setMessage("No sessions found for the event");
+            return response;
+        }
+
+        response.setMessage("Sessions list");
+        response.setSessionList(sessions);
+
+        return response;
     }
 
     //update an existing sessions
     @Override
+    @Transactional
     public Session updateSession(Long id, SessionUpdateDto sessionUpdateDto) {
 
         //find existing session
