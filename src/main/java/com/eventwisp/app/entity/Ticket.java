@@ -1,8 +1,11 @@
 package com.eventwisp.app.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 @Entity
 @Table(name = "ticket")
@@ -27,4 +30,9 @@ public class Ticket {
     @ManyToOne
     @JoinColumn(name = "event_id")
     private Event event;
+
+    //bookings
+    @JsonIgnore
+    @ManyToMany(mappedBy = "tickets")
+    private List<Booking> bookings;
 }
