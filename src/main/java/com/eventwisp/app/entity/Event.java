@@ -57,4 +57,9 @@ public class Event {
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL,mappedBy = "event")
     private List<Session> sessions;
 
+    //bookings
+    @JsonIgnore
+    @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL,mappedBy = "event")
+    private List<Booking> bookings;
+
 }

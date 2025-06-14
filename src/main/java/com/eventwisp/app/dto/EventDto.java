@@ -15,5 +15,6 @@ public class EventDto {
     private String coverImageLink;
     private String description;
     private Long eventCategoryId;
+    private Long organizerId;
     private List<Ticket> tickets;
 }
