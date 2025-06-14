@@ -2,6 +2,8 @@ package com.eventwisp.app.controller;
 
 import com.eventwisp.app.dto.EventDto;
 import com.eventwisp.app.dto.EventUpdateDto;
+import com.eventwisp.app.dto.response.EventCreateResponse;
+import com.eventwisp.app.dto.response.FindEventByOrganizerResponse;
 import com.eventwisp.app.entity.Event;
 import com.eventwisp.app.service.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,14 +33,14 @@ public class EventController {
     public ResponseEntity<?> createEvent(@RequestBody EventDto eventDto){
         try{
             //create a new event
-            Event newEvent= eventService.createEvent(eventDto);
+            EventCreateResponse response= eventService.createEvent(eventDto);
 
             //Check if new event is null
-            if(newEvent==null){
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No valid event category was found");
+            if(response.getEvent()==null){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response.getMessage());
             }
 
-            return ResponseEntity.status(HttpStatus.OK).body(eventService);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
@@ -73,6 +75,22 @@ public class EventController {
             }
 
             return ResponseEntity.status(HttpStatus.OK).body(existingEvent);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    //Find events by organizer
+    @GetMapping("/organizers/{organizerId}/events")
+    public ResponseEntity<?> findEventsByOrganizer(@PathVariable Long organizerId){
+        try {
+            FindEventByOrganizerResponse response=eventService.findEventByOrganizer(organizerId);
+
+            if(response.getEventsList().isEmpty()){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response.getMessage());
+            }
+
+            return ResponseEntity.status(HttpStatus.OK).body(response.getEventsList());
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }

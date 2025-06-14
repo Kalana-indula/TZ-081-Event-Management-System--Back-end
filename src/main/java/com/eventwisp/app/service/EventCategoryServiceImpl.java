@@ -43,7 +43,7 @@ public class EventCategoryServiceImpl implements EventCategoryService{
         //Find existing category
         EventCategory existingCategory=eventCategoryRepository.findById(id).orElse(null);
 
-        //Chek if there is an existing category
+        //Check if there is an existing category
         if(existingCategory==null){
             return null;
         }

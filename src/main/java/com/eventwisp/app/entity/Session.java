@@ -1,11 +1,13 @@
 package com.eventwisp.app.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 @Entity
 @Table(name = "session")
@@ -34,4 +36,9 @@ public class Session {
     @ManyToOne
     @JoinColumn(name = "event_id")
     private Event event;
+
+    //bookings
+    @JsonIgnore
+    @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL,mappedBy = "session")
+    private List<Booking> bookings;
 }
