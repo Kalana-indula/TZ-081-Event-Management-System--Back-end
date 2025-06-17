@@ -64,6 +64,7 @@ public class BookingController {
             //get bookings
             FindBookingsByEventResponse response =bookingService.findBookingsByEvent(eventId);
 
+            //check if the response has an empty booking list
             if(response.getBookings().isEmpty()){
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response.getMessage());
             }

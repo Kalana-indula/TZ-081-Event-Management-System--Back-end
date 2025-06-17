@@ -83,11 +83,13 @@ public class BookingServiceImpl implements BookingService{
             if(ticket!=null){
                 int count=ticket.getTicketCount();
 
-                bookedTickets.add(ticket);
-                ticket.setTicketCount(count-1);
-                totalPrice+=ticket.getPrice();
+                if(count>=0){
+                    bookedTickets.add(ticket);
+                    ticket.setTicketCount(count-1);
+                    totalPrice+=ticket.getPrice();
 
-                ticketRepository.save(ticket);
+                    ticketRepository.save(ticket);
+                }
             }
         }
 
