@@ -4,18 +4,17 @@ import com.eventwisp.app.dto.BookingDto;
 import com.eventwisp.app.dto.response.CreateBookingResponse;
 import com.eventwisp.app.dto.response.FindBookingsByEventResponse;
 import com.eventwisp.app.entity.Booking;
+import com.eventwisp.app.entity.BookingSequenceTracker;
 import com.eventwisp.app.entity.Session;
 import com.eventwisp.app.entity.Ticket;
-import com.eventwisp.app.repository.BookingRepository;
-import com.eventwisp.app.repository.EventRepository;
-import com.eventwisp.app.repository.SessionRepository;
-import com.eventwisp.app.repository.TicketRepository;
+import com.eventwisp.app.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,17 +26,20 @@ public class BookingServiceImpl implements BookingService{
     private EventRepository eventRepository;
     private TicketRepository ticketRepository;
     private SessionRepository sessionRepository;
+    private BookingSequenceRepository bookingSequenceRepository;
 
     //Inject repositories
     @Autowired
     public BookingServiceImpl(BookingRepository bookingRepository,
                               EventRepository eventRepository,
                               TicketRepository ticketRepository,
-                              SessionRepository sessionRepository) {
+                              SessionRepository sessionRepository,
+                              BookingSequenceRepository bookingSequenceRepository) {
         this.bookingRepository=bookingRepository;
         this.eventRepository=eventRepository;
         this.ticketRepository=ticketRepository;
         this.sessionRepository=sessionRepository;
+        this.bookingSequenceRepository=bookingSequenceRepository;
     }
 
     @Override
@@ -58,7 +60,7 @@ public class BookingServiceImpl implements BookingService{
         //create new booking object
         Booking booking=new Booking();
 
-        booking.setBookingId("BK001");
+        booking.setBookingId(generateBookingId());
         booking.setFirstName(bookingDto.getFirstName());
         booking.setLastName(bookingDto.getLastName());
         booking.setEmail(bookingDto.getEmail());
@@ -141,5 +143,27 @@ public class BookingServiceImpl implements BookingService{
         response.setBookings(bookingList);
 
         return response;
+    }
+
+    //generate booking id
+    private String generateBookingId() {
+        LocalDate today = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        String datePrefix = "BK" + today.format(formatter);
+
+        BookingSequenceTracker tracker = bookingSequenceRepository.findById(today.toString())
+                .orElseGet(() -> {
+                    BookingSequenceTracker newTracker = new BookingSequenceTracker();
+                    newTracker.setDate(today.toString());
+                    newTracker.setSequence(0L);
+                    return bookingSequenceRepository.save(newTracker);
+                });
+
+        synchronized (this) {
+            long sequence = tracker.getSequence() + 1;
+            tracker.setSequence(sequence);
+            bookingSequenceRepository.save(tracker);
+            return datePrefix + "-" + String.format("%03d", sequence);
+        }
     }
 }
