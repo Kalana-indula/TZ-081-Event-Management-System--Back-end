@@ -13,4 +13,8 @@ public interface BookingRepository extends JpaRepository<Booking,Long> {
     //custom method for find all bookings by id
     @Query("SELECT b FROM Booking b WHERE b.event.id = :eventId")
     List<Booking> bookingsByEvent(Long eventId);
+
+    //custom method for find last booking id
+    @Query("SELECT b.id FROM Booking b ORDER BY b.id DESC LIMIT 1")
+    Long findLastId();
 }
