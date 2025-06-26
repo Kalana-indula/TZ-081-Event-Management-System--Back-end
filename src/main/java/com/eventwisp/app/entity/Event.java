@@ -4,8 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -14,6 +13,10 @@ import java.util.List;
 @Table(name = "event")
 @Setter
 @Getter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Data
 public class Event {
 
     @Id

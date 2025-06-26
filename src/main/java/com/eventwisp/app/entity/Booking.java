@@ -1,8 +1,7 @@
 package com.eventwisp.app.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -12,6 +11,10 @@ import java.util.List;
 @Setter
 @Getter
 @Table(name = "booking")
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+@Builder
 public class Booking {
 
     @Id
