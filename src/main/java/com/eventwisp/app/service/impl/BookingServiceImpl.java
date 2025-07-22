@@ -1,4 +1,4 @@
-package com.eventwisp.app.service;
+package com.eventwisp.app.service.impl;
 
 import com.eventwisp.app.dto.BookingDto;
 import com.eventwisp.app.dto.response.CreateBookingResponse;
@@ -8,6 +8,7 @@ import com.eventwisp.app.entity.BookingSequenceTracker;
 import com.eventwisp.app.entity.Session;
 import com.eventwisp.app.entity.Ticket;
 import com.eventwisp.app.repository.*;
+import com.eventwisp.app.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class BookingServiceImpl implements BookingService{
+public class BookingServiceImpl implements BookingService {
 
     //Create instances of repositories
     private BookingRepository bookingRepository;

@@ -1,4 +1,4 @@
-package com.eventwisp.app.service;
+package com.eventwisp.app.service.impl;
 
 import com.eventwisp.app.dto.EventDto;
 import com.eventwisp.app.dto.EventUpdateDto;
@@ -12,6 +12,7 @@ import com.eventwisp.app.repository.EventCategoryRepository;
 import com.eventwisp.app.repository.EventRepository;
 import com.eventwisp.app.repository.OrganizerRepository;
 import com.eventwisp.app.repository.TicketRepository;
+import com.eventwisp.app.service.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -104,6 +105,12 @@ public class EventServiceImpl implements EventService {
 
         return eventRepository.findAll();
     }
+
+    @Override
+    public Integer getAllOnGoingEventsCount() {
+        return eventRepository.findAllOnGoingEvents().size();
+    }
+
 
     @Override
     public Event getEventById(Long id) {

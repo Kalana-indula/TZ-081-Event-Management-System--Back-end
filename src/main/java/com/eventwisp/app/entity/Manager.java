@@ -34,6 +34,5 @@ public class Manager {
     private String password;
 
     @Column(name = "is_assigned")
-    private Boolean isAssigned;
-
+    private Boolean isAssigned=false;
 }

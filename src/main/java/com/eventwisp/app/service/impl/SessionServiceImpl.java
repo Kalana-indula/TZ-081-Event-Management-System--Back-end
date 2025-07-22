@@ -1,4 +1,4 @@
-package com.eventwisp.app.service;
+package com.eventwisp.app.service.impl;
 
 import com.eventwisp.app.dto.SessionDto;
 import com.eventwisp.app.dto.SessionUpdateDto;
@@ -7,6 +7,7 @@ import com.eventwisp.app.entity.Event;
 import com.eventwisp.app.entity.Session;
 import com.eventwisp.app.repository.EventRepository;
 import com.eventwisp.app.repository.SessionRepository;
+import com.eventwisp.app.service.SessionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-public class SessionServiceImpl implements SessionService{
+public class SessionServiceImpl implements SessionService {
 
     //Create an instance of sessionRepository and eventRepository
     private SessionRepository sessionRepository;

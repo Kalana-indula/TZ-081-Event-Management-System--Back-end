@@ -1,10 +1,11 @@
-package com.eventwisp.app.service;
+package com.eventwisp.app.service.impl;
 
 import com.eventwisp.app.dto.TicketTypeUpdateDto;
 import com.eventwisp.app.dto.TicketUpdateDto;
 import com.eventwisp.app.dto.response.TicketUpdateResponse;
 import com.eventwisp.app.entity.Ticket;
 import com.eventwisp.app.repository.TicketRepository;
+import com.eventwisp.app.service.TicketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

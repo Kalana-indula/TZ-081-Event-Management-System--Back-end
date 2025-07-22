@@ -12,6 +12,8 @@ public interface OrganizerService {
 
     List<Organizer> getAllOrganizers();
 
+    Integer getOrganizerCount();
+
     Organizer getOrganizerById(Long id);
 
     Organizer updateOrganizer(Long id, OrganizerUpdateDto organizerUpdateDto);

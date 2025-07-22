@@ -16,6 +16,8 @@ public interface EventService {
 
     List<Event> getAllEvents();
 
+    Integer getAllOnGoingEventsCount();
+
     Event getEventById(Long id);
 
     //get events by organizer
