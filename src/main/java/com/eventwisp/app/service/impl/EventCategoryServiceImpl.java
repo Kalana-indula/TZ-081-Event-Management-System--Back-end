@@ -1,14 +1,15 @@
-package com.eventwisp.app.service;
+package com.eventwisp.app.service.impl;
 
 import com.eventwisp.app.entity.EventCategory;
 import com.eventwisp.app.repository.EventCategoryRepository;
+import com.eventwisp.app.service.EventCategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-public class EventCategoryServiceImpl implements EventCategoryService{
+public class EventCategoryServiceImpl implements EventCategoryService {
 
     //Create an instance of 'EventCategoryRepository'
     private EventCategoryRepository eventCategoryRepository;

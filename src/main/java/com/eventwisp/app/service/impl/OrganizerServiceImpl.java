@@ -1,15 +1,16 @@
-package com.eventwisp.app.service;
+package com.eventwisp.app.service.impl;
 
 import com.eventwisp.app.dto.OrganizerUpdateDto;
 import com.eventwisp.app.entity.Organizer;
 import com.eventwisp.app.repository.OrganizerRepository;
+import com.eventwisp.app.service.OrganizerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-public class OrganizerServiceImpl implements OrganizerService{
+public class OrganizerServiceImpl implements OrganizerService {
 
     //Create a 'OrganizerRepository' instance
     private OrganizerRepository organizerRepository;
@@ -31,6 +32,16 @@ public class OrganizerServiceImpl implements OrganizerService{
     public List<Organizer> getAllOrganizers() {
 
         return organizerRepository.findAll();
+    }
+
+    //get organizer count
+    @Override
+    public Integer getOrganizerCount() {
+
+        List<Organizer> organizerList=organizerRepository.findAll();
+
+
+        return organizerList.size();
     }
 
     //Find an organizer by id

@@ -51,6 +51,22 @@ public class OrganizerController {
         }
     }
 
+    //get organizers count
+    @GetMapping("/organizers/count")
+    public ResponseEntity<?> findOrganizersCount(){
+        try{
+           int count = organizerService.getOrganizerCount();
+
+           if(count==0){
+               return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No organizers found");
+           }
+
+           return ResponseEntity.status(HttpStatus.OK).body(count);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
     //Find organizer by id
     @GetMapping("/organizers/{id}")
     public ResponseEntity<?> findOrganizerById(@PathVariable Long id){

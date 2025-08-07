@@ -6,6 +6,8 @@ import lombok.Setter;
 @Setter
 @Getter
 public class ManagerUpdateDto {
+    private String firstName;
+    private String lastName;
     private String phone;
     private String email;
     private String password;

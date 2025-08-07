@@ -2,8 +2,7 @@ package com.eventwisp.app.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -13,6 +12,10 @@ import java.util.List;
 @Table(name = "session")
 @Setter
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+@Builder
 public class Session {
 
     @Id

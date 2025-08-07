@@ -63,6 +63,21 @@ public class EventController {
         }
     }
 
+    //find all ongoing events
+    @GetMapping("/on-going/events")
+    public ResponseEntity<?> findAllOngoingEvents(){
+        try{
+            Integer onGoingEventsCount=eventService.getAllOnGoingEventsCount();
+
+            if(onGoingEventsCount==0){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No Ongoing Events Found found");
+            }
+            return ResponseEntity.status(HttpStatus.OK).body(onGoingEventsCount);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
     //Find an event by id
     @GetMapping("/events/{id}")
     public ResponseEntity<?> findEventById(@PathVariable Long id){

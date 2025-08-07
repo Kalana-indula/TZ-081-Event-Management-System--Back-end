@@ -1,6 +1,7 @@
 package com.eventwisp.app.service;
 
 import com.eventwisp.app.dto.ManagerUpdateDto;
+import com.eventwisp.app.dto.response.general.UpdateResponse;
 import com.eventwisp.app.entity.Manager;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +16,11 @@ public interface ManagerService {
 
     Manager findManagerById(Long id);
 
+    Manager findAssignedManager();
+
     Manager updateManager(Long id, ManagerUpdateDto managerUpdateDto);
+
+    UpdateResponse<Manager> setManagerStatus(Long id);
 
     Boolean deleteManager(Long id);
 }
