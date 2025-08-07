@@ -29,11 +29,17 @@ public class Event {
     @Column(name = "starting_date")
     private LocalDate startingDate;
 
+    @Column(name = "date_added")
+    private LocalDate dateAdded;
+
     @Column(name = "cover_image_link")
     private String coverImageLink;
 
     @Column(name = "description")
     private String description;
+
+    @Column(name="is_approved")
+    private Boolean isApproved=false;
 
     //Make sure, that 'isCompleted' is false by default
     @Column(name = "is_completed",nullable = false,columnDefinition = "BOOLEAN DEFAULT FALSE")

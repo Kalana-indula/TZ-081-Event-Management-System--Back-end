@@ -8,6 +8,7 @@ import com.eventwisp.app.service.ManagerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
@@ -114,16 +115,18 @@ public class ManagerServiceImpl implements ManagerService {
 
         if((assignedManager!=null) && (Objects.equals(assignedManager.getId(), id))){
             assignedManager.setIsAssigned(false);
+            assignedManager.setStatusUpdateDate(LocalDate.now());
             managerRepository.save(assignedManager);
 
             managerUpdateResponse.setMessage("Manager is un-assigned");
-            managerUpdateResponse.setUpdatedData(assignedManager);
+            managerUpdateResponse.setUpdatedData(assignedManager); 
 
             return managerUpdateResponse;
         }
 
         if(assignedManager==null){
             existingManager.setIsAssigned(true);
+            existingManager.setStatusUpdateDate(LocalDate.now());
             managerRepository.save(existingManager);
 
             managerUpdateResponse.setMessage("Manager is assigned");
@@ -133,12 +136,14 @@ public class ManagerServiceImpl implements ManagerService {
         }
 
         assignedManager.setIsAssigned(false);
+        assignedManager.setStatusUpdateDate(LocalDate.now());
 
         //un-assigned currently assigned manager
         managerRepository.save(assignedManager);
 
         //assign new manager
         existingManager.setIsAssigned(true);
+        existingManager.setStatusUpdateDate(LocalDate.now());
 
         managerRepository.save(existingManager);
 

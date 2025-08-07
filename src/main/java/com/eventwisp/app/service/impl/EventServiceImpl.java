@@ -70,6 +70,7 @@ public class EventServiceImpl implements EventService {
 
         event.setEventName(eventDto.getEventName());
         event.setStartingDate(eventDto.getStartingDate());
+        event.setDateAdded(LocalDate.now());
         event.setEventCategory(category);
         event.setCoverImageLink(eventDto.getCoverImageLink());
         event.setDescription(eventDto.getDescription());
@@ -104,6 +105,12 @@ public class EventServiceImpl implements EventService {
     public List<Event> getAllEvents() {
 
         return eventRepository.findAll();
+    }
+
+    //event details list for manager dashboard
+    @Override
+    public List<Event> getManagerEventList() {
+        return List.of();
     }
 
     @Override

@@ -30,12 +30,12 @@ public class Ticket {
     @Column(name = "ticket_count")
     private Integer ticketCount;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "event_id")
     private Event event;
 
     //bookings
     @JsonIgnore
-    @ManyToMany(mappedBy = "tickets")
+    @ManyToMany(mappedBy = "tickets",cascade = CascadeType.ALL)
     private List<Booking> bookings;
 }

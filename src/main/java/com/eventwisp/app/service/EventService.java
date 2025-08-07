@@ -16,6 +16,9 @@ public interface EventService {
 
     List<Event> getAllEvents();
 
+    //event details list for manager dashboard
+    List<Event> getManagerEventList();
+
     Integer getAllOnGoingEventsCount();
 
     Event getEventById(Long id);
