@@ -2,8 +2,7 @@ package com.eventwisp.app.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
@@ -11,6 +10,10 @@ import java.util.List;
 @Table(name = "organizer")
 @Setter
 @Getter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Data
 public class Organizer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

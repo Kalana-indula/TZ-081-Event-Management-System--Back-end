@@ -4,8 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -14,6 +13,10 @@ import java.util.List;
 @Table(name = "event")
 @Setter
 @Getter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Data
 public class Event {
 
     @Id
@@ -26,11 +29,17 @@ public class Event {
     @Column(name = "starting_date")
     private LocalDate startingDate;
 
+    @Column(name = "date_added")
+    private LocalDate dateAdded;
+
     @Column(name = "cover_image_link")
     private String coverImageLink;
 
     @Column(name = "description")
     private String description;
+
+    @Column(name="is_approved")
+    private Boolean isApproved=false;
 
     //Make sure, that 'isCompleted' is false by default
     @Column(name = "is_completed",nullable = false,columnDefinition = "BOOLEAN DEFAULT FALSE")

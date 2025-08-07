@@ -1,6 +1,7 @@
 package com.eventwisp.app.controller;
 
 import com.eventwisp.app.dto.ManagerUpdateDto;
+import com.eventwisp.app.dto.response.general.UpdateResponse;
 import com.eventwisp.app.entity.Manager;
 import com.eventwisp.app.service.ManagerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,6 +66,22 @@ public class ManagerController {
         }
     }
 
+    //find currently assigned manager
+    @GetMapping("/managers/assigned")
+    public ResponseEntity<?> findAssignedManager(){
+        try{
+            Manager assignedManager= managerService.findAssignedManager();
+
+            if(assignedManager==null){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No manager found is assigned");
+            }
+
+            return ResponseEntity.status(HttpStatus.OK).body(assignedManager);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
     //Update a manager
     @PutMapping("/managers/{id}")
     public ResponseEntity<?> updateManager(@PathVariable Long id,@RequestBody ManagerUpdateDto managerUpdateDto){
@@ -77,6 +94,22 @@ public class ManagerController {
             }
 
             return ResponseEntity.status(HttpStatus.OK).body(updatedManager);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    //set manager status
+    @PutMapping("/managers/{managerId}/update-status")
+    public ResponseEntity<?> updateManagerStatus(@PathVariable Long managerId){
+        try{
+            UpdateResponse<Manager> managerUpdateResponse=managerService.setManagerStatus(managerId);
+
+            if(managerUpdateResponse.getUpdatedData()==null){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(managerUpdateResponse.getMessage());
+            }
+
+            return ResponseEntity.status(HttpStatus.OK).body(managerUpdateResponse);
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }

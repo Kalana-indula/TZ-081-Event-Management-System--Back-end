@@ -60,6 +60,24 @@
 			<optional>true</optional>
 		</dependency>
 
+<!--		Adding in memory database-->
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<version>2.3.232</version>
+			<scope>test</scope>
+		</dependency>
+
+<!--		********************************-->
+
+<!--		Adding testing library-->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+<!--		**********************************-->
+
 		<!--		Added for Tomcat compatibility-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

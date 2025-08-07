@@ -1,15 +1,16 @@
-package com.eventwisp.app.service;
+package com.eventwisp.app.service.impl;
 
 import com.eventwisp.app.dto.AdminUpdateDto;
 import com.eventwisp.app.entity.Admin;
 import com.eventwisp.app.repository.AdminRepository;
+import com.eventwisp.app.service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-public class AdminServiceImpl implements AdminService{
+public class AdminServiceImpl implements AdminService {
 
     //get an instance of 'AdminRepository'
     private AdminRepository adminRepository;
