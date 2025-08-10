@@ -12,6 +12,7 @@ import java.util.List;
 public class EventDto {
     private String eventName;
     private LocalDate startingDate;
+    private LocalDate dateAdded;
     private String coverImageLink;
     private String description;
     private Long eventCategoryId;

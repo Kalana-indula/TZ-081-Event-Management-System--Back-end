@@ -1,8 +1,6 @@
 package com.eventwisp.app.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.annotation.Nulls;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -41,15 +39,24 @@ public class Event {
     @Column(name="is_approved")
     private Boolean isApproved=false;
 
+    @Column(name = "is_disapproved")
+    private Boolean isDisapproved=false;
+
+    @Column(name = "is_started")
+    private Boolean isStarted=false;
+
     //Make sure, that 'isCompleted' is false by default
-    @Column(name = "is_completed",nullable = false,columnDefinition = "BOOLEAN DEFAULT FALSE")
-    @JsonSetter(nulls = Nulls.SKIP) //skip null values assuring isCompleted would take only 'tru' or 'false'
-    private Boolean isCompleted;
+    @Column(name = "is_completed")
+    private Boolean isCompleted=false;
 
     //Create a column for foriegn key
     @ManyToOne
     @JoinColumn(name = "event_category_id")
     private EventCategory eventCategory;
+
+    @ManyToOne
+    @JoinColumn(name = "event_status_id")
+    private EventStatus eventStatus;
 
     //Organizer
     @ManyToOne
@@ -70,5 +77,4 @@ public class Event {
     @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL,mappedBy = "event")
     private List<Booking> bookings;
-
 }

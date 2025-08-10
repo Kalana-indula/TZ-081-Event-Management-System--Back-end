@@ -17,4 +17,8 @@ public interface EventRepository extends JpaRepository<Event,Long> {
     //find all ongoing events
     @Query("SELECT e FROM Event e WHERE e.isCompleted = false")
     List<Event> findAllOnGoingEvents();
+
+    @Query("SELECT e FROM Event e WHERE e.eventStatus.id = :statusId")
+    List<Event> findEventByStatus(Long statusId);
+
 }
