@@ -2,8 +2,13 @@ package com.eventwisp.app.controller;
 
 import com.eventwisp.app.dto.EventDto;
 import com.eventwisp.app.dto.EventUpdateDto;
+import com.eventwisp.app.dto.ManagersEventDto;
+import com.eventwisp.app.dto.event.EventStatusDto;
 import com.eventwisp.app.dto.response.EventCreateResponse;
 import com.eventwisp.app.dto.response.FindEventByOrganizerResponse;
+import com.eventwisp.app.dto.response.ManagersEventsResponse;
+import com.eventwisp.app.dto.response.general.SingleEntityResponse;
+import com.eventwisp.app.dto.response.general.UpdateResponse;
 import com.eventwisp.app.entity.Event;
 import com.eventwisp.app.service.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +68,23 @@ public class EventController {
         }
     }
 
+    @GetMapping("/events/details")
+    public ResponseEntity<?> findManagerEventsList(){
+        try{
+            //response
+            ManagersEventsResponse response= eventService.getManagerEventList();
+
+            //check if there are events
+            if(response.getEventDetails().isEmpty()){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response.getMessage());
+            }
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
     //find all ongoing events
     @GetMapping("/on-going/events")
     public ResponseEntity<?> findAllOngoingEvents(){
@@ -78,22 +100,6 @@ public class EventController {
         }
     }
 
-    //Find an event by id
-    @GetMapping("/events/{id}")
-    public ResponseEntity<?> findEventById(@PathVariable Long id){
-        try{
-            Event existingEvent= eventService.getEventById(id);
-
-            //Check if event exists
-            if(existingEvent==null){
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No event found");
-            }
-
-            return ResponseEntity.status(HttpStatus.OK).body(existingEvent);
-        }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
-    }
 
     //Find events by organizer
     @GetMapping("/organizers/{organizerId}/events")
@@ -111,6 +117,56 @@ public class EventController {
         }
     }
 
+    @GetMapping("/events/status/{statusId}")
+    public ResponseEntity<?> findEventByStatus(@PathVariable Long statusId){
+        try{
+
+            ManagersEventsResponse response= eventService.getEventsByStatus(statusId);
+
+            if(response.getEventDetails().isEmpty()){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response.getMessage());
+            }
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/events/{eventId}")
+    public ResponseEntity<?> findEventDetailsById(@PathVariable Long eventId) {
+        try {
+            // Call service to get event details
+            ManagersEventsResponse response = eventService.getEventDetailsById(eventId);
+
+            // Check if event details were found
+            if (response.getEventDetails() == null || response.getEventDetails().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response.getMessage());
+            }
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    //findSingleEventById
+    @GetMapping("/events/{eventId}/details")
+    public ResponseEntity<?> findSingleEventById(@PathVariable Long eventId) {
+        try {
+            SingleEntityResponse<ManagersEventDto> response = eventService.getSingleEventById(eventId);
+
+            // Check if event was found
+            if (response.getEntityData() == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response.getMessage());
+            }
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
     //Update an event
     @PutMapping("events/{id}")
     public ResponseEntity<?> updateEvent(@PathVariable Long id,@RequestBody EventUpdateDto eventUpdateDto){
@@ -123,6 +179,21 @@ public class EventController {
             }
 
             return ResponseEntity.status(HttpStatus.OK).body(updatedEvent);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @PutMapping("events/{id}/status")
+    public ResponseEntity<?> updateEventStatus(@PathVariable Long id,@RequestBody EventStatusDto eventStatusDto){
+        try{
+            UpdateResponse<Event> response= eventService.updateEventStatus(id,eventStatusDto);
+
+            if(response.getUpdatedData()==null){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response.getMessage());
+            }
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
