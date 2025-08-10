@@ -13,6 +13,11 @@ public class ManagersEventDto {
     private String eventName;
     private String eventType;
     private String organizer;
+    private Long organizerId;
     private LocalDate dateAdded;
+    private LocalDate startingDate;
+    private String coverImageLink;
+    private String eventDescription;
+    private Boolean isApproved;
     private String status;
 }
