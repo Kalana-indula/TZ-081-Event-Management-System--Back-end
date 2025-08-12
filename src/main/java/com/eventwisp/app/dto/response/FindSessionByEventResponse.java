@@ -1,6 +1,6 @@
 package com.eventwisp.app.dto.response;
 
-import com.eventwisp.app.entity.Session;
+import com.eventwisp.app.dto.sessionDto.SessionDetailsDto;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,5 +11,5 @@ import java.util.List;
 @Getter
 public class FindSessionByEventResponse {
     private String message;
-    private List<Session> sessionList= Collections.emptyList();
+    private List<SessionDetailsDto> sessionList= Collections.emptyList();
 }

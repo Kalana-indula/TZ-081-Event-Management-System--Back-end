@@ -41,6 +41,12 @@ public class Organizer {
     @Column(name = "password")
     private String password;
 
+    @Column(name = "is_approved")
+    private Boolean isApproved=false;
+
+    @Column(name = "is_disapproved")
+    private Boolean isDisapproved=false;
+
     //Events of organizer
     @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL,mappedBy = "organizer")

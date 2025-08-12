@@ -57,7 +57,6 @@ public class BookingServiceImpl implements BookingService {
             return response;
         }
 
-
         //create new booking object
         Booking booking=new Booking();
 

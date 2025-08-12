@@ -1,7 +1,7 @@
 package com.eventwisp.app.controller;
 
-import com.eventwisp.app.dto.SessionDto;
-import com.eventwisp.app.dto.SessionUpdateDto;
+import com.eventwisp.app.dto.sessionDto.CreateSessionDto;
+import com.eventwisp.app.dto.sessionDto.SessionUpdateDto;
 import com.eventwisp.app.dto.response.FindSessionByEventResponse;
 import com.eventwisp.app.entity.Session;
 import com.eventwisp.app.service.SessionService;
@@ -27,9 +27,9 @@ public class SessionController {
 
     //create a new session
     @PostMapping("/sessions")
-    public ResponseEntity<?> createSession(@RequestBody SessionDto sessionDto){
+    public ResponseEntity<?> createSession(@RequestBody CreateSessionDto createSessionDto){
         try{
-            Session session=sessionService.createSession(sessionDto);
+            Session session=sessionService.createSession(createSessionDto);
 
             if(session==null){
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Event not found");
