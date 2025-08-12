@@ -232,6 +232,9 @@ public class EventServiceImpl implements EventService {
         eventDetails.setCoverImageLink(existingEvent.getCoverImageLink());
         eventDetails.setEventDescription(existingEvent.getDescription());
         eventDetails.setIsApproved(existingEvent.getIsApproved());
+        eventDetails.setIsStarted(existingEvent.getIsStarted());
+        eventDetails.setIsCompleted(existingEvent.getIsCompleted());
+        eventDetails.setIsDisapproved(existingEvent.getIsDisapproved());
         eventDetails.setStatus(existingEvent.getEventStatus().getStatusName());
 
         response.setMessage("Event details fetched successfully");

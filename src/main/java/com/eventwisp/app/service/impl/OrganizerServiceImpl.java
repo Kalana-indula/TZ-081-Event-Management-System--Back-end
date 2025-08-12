@@ -1,12 +1,15 @@
 package com.eventwisp.app.service.impl;
 
 import com.eventwisp.app.dto.OrganizerUpdateDto;
+import com.eventwisp.app.dto.organizer.OrganizerDetailsDto;
+import com.eventwisp.app.dto.response.general.MultipleEntityResponse;
 import com.eventwisp.app.entity.Organizer;
 import com.eventwisp.app.repository.OrganizerRepository;
 import com.eventwisp.app.service.OrganizerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -32,6 +35,43 @@ public class OrganizerServiceImpl implements OrganizerService {
     public List<Organizer> getAllOrganizers() {
 
         return organizerRepository.findAll();
+    }
+
+    @Override
+    public MultipleEntityResponse<OrganizerDetailsDto> getAllOrganizersDetails() {
+
+        //existing organizers
+        List<Organizer> existingOrganizers=organizerRepository.findAll();
+
+        //response
+        MultipleEntityResponse<OrganizerDetailsDto> response=new MultipleEntityResponse<>();
+
+        if(existingOrganizers.isEmpty()){
+            response.setMessage("No organizer found");
+            return response;
+        }
+
+        //organizer details
+        List<OrganizerDetailsDto> organizersDetails=new ArrayList<>();
+
+        for(Organizer organizer:existingOrganizers){
+            OrganizerDetailsDto details=new OrganizerDetailsDto();
+
+            details.setId(organizer.getId());
+            details.setName(organizer.getFirstName()+" "+organizer.getLastName());
+            details.setNic(organizer.getNic());
+            details.setEmail(organizer.getEmail());
+            details.setPhone(organizer.getPhone());
+            details.setIsApproved(organizer.getIsApproved());
+            details.setIsDisapproved(organizer.getIsDisapproved());
+
+            organizersDetails.add(details);
+        }
+
+        response.setEntityList(organizersDetails);
+        response.setMessage("Organizer details found");
+
+        return response;
     }
 
     //get organizer count

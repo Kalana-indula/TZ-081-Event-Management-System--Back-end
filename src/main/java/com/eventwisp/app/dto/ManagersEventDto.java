@@ -19,5 +19,8 @@ public class ManagersEventDto {
     private String coverImageLink;
     private String eventDescription;
     private Boolean isApproved;
+    private Boolean isStarted;
+    private Boolean isCompleted;
+    private Boolean isDisapproved;
     private String status;
 }

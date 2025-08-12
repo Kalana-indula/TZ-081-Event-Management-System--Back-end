@@ -1,6 +1,8 @@
 package com.eventwisp.app.controller;
 
 import com.eventwisp.app.dto.OrganizerUpdateDto;
+import com.eventwisp.app.dto.organizer.OrganizerDetailsDto;
+import com.eventwisp.app.dto.response.general.MultipleEntityResponse;
 import com.eventwisp.app.entity.Organizer;
 import com.eventwisp.app.service.OrganizerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +49,22 @@ public class OrganizerController {
 
             return ResponseEntity.status(HttpStatus.OK).body(allOrganizers);
         }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    //find all organizers
+    @GetMapping("/organizers/details")
+    public ResponseEntity<?> findAllOrganizersDetails(){
+        try {
+            MultipleEntityResponse<OrganizerDetailsDto> response = organizerService.getAllOrganizersDetails();
+
+            if(response.getEntityList() == null || response.getEntityList().isEmpty()){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response.getMessage());
+            }
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }

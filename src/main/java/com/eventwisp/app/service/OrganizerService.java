@@ -1,6 +1,8 @@
 package com.eventwisp.app.service;
 
 import com.eventwisp.app.dto.OrganizerUpdateDto;
+import com.eventwisp.app.dto.organizer.OrganizerDetailsDto;
+import com.eventwisp.app.dto.response.general.MultipleEntityResponse;
 import com.eventwisp.app.entity.Organizer;
 import org.springframework.stereotype.Service;
 
@@ -12,11 +14,15 @@ public interface OrganizerService {
 
     List<Organizer> getAllOrganizers();
 
+    MultipleEntityResponse<OrganizerDetailsDto> getAllOrganizersDetails();
+
     Integer getOrganizerCount();
 
     Organizer getOrganizerById(Long id);
 
     Organizer updateOrganizer(Long id, OrganizerUpdateDto organizerUpdateDto);
+
+
 
     Boolean deleteOrganizer(Long id);
 }
