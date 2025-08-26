@@ -2,7 +2,10 @@ package com.eventwisp.app.controller;
 
 import com.eventwisp.app.dto.OrganizerUpdateDto;
 import com.eventwisp.app.dto.organizer.OrganizerDetailsDto;
+import com.eventwisp.app.dto.organizer.OrganizerStatusDto;
 import com.eventwisp.app.dto.response.general.MultipleEntityResponse;
+import com.eventwisp.app.dto.response.general.SingleEntityResponse;
+import com.eventwisp.app.dto.response.general.UpdateResponse;
 import com.eventwisp.app.entity.Organizer;
 import com.eventwisp.app.service.OrganizerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,16 +90,63 @@ public class OrganizerController {
 
     //Find organizer by id
     @GetMapping("/organizers/{id}")
-    public ResponseEntity<?> findOrganizerById(@PathVariable Long id){
+    public ResponseEntity<?> findOrganizerById(@PathVariable Long id) {
         try {
-            Organizer organizer=organizerService.getOrganizerById(id);
+            SingleEntityResponse<OrganizerDetailsDto> response = organizerService.getOrganizerDetailsById(id);
 
-            //Check if the 'organizer' is null
-            if(organizer==null){
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No organizer found for the corresponding id");
+            if(response.getEntityData() == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response.getMessage());
             }
-            return ResponseEntity.status(HttpStatus.OK).body(organizer);
-        }catch (Exception e){
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/organizers/pending")
+    public ResponseEntity<?> findPendingOrganizers() {
+        try {
+            MultipleEntityResponse<OrganizerDetailsDto> response = organizerService.getPendingOrganizers();
+
+            if(response.getEntityList() == null || response.getEntityList().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response.getMessage());
+            }
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    //approved organizers
+    @GetMapping("/organizers/approved")
+    public ResponseEntity<?> findApprovedOrganizers() {
+        try {
+            MultipleEntityResponse<OrganizerDetailsDto> response = organizerService.getApprovedOrganizers();
+
+            if(response.getEntityList() == null || response.getEntityList().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response.getMessage());
+            }
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    //find disapproved accounts
+    @GetMapping("/organizers/disapproved")
+    public ResponseEntity<?> findDisapprovedOrganizers() {
+        try {
+            MultipleEntityResponse<OrganizerDetailsDto> response = organizerService.getDisapprovedOrganizers();
+
+            if(response.getEntityList() == null || response.getEntityList().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response.getMessage());
+            }
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
@@ -114,6 +164,22 @@ public class OrganizerController {
 
             return ResponseEntity.status(HttpStatus.OK).body(updatedOrganizer);
         }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    //update organizer status
+    @PutMapping("/organizers/{id}/status")
+    public ResponseEntity<?> updateOrganizerStatus(@PathVariable Long id, @RequestBody OrganizerStatusDto organizerStatusDto) {
+        try {
+            UpdateResponse<OrganizerDetailsDto> response = organizerService.updateOrganizerStatus(id, organizerStatusDto);
+
+            if (response.getUpdatedData()==null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response.getMessage());
+            }
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
