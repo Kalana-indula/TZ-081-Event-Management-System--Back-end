@@ -41,6 +41,9 @@ public class Organizer {
     @Column(name = "password")
     private String password;
 
+    @Column(name = "pending_approval")
+    private Boolean pendingApproval=true;
+
     @Column(name = "is_approved")
     private Boolean isApproved=false;
 

@@ -2,7 +2,10 @@ package com.eventwisp.app.service;
 
 import com.eventwisp.app.dto.OrganizerUpdateDto;
 import com.eventwisp.app.dto.organizer.OrganizerDetailsDto;
+import com.eventwisp.app.dto.organizer.OrganizerStatusDto;
 import com.eventwisp.app.dto.response.general.MultipleEntityResponse;
+import com.eventwisp.app.dto.response.general.SingleEntityResponse;
+import com.eventwisp.app.dto.response.general.UpdateResponse;
 import com.eventwisp.app.entity.Organizer;
 import org.springframework.stereotype.Service;
 
@@ -18,11 +21,20 @@ public interface OrganizerService {
 
     Integer getOrganizerCount();
 
-    Organizer getOrganizerById(Long id);
+    SingleEntityResponse<OrganizerDetailsDto> getOrganizerDetailsById(Long id);
+
+    //find all pending organizer accounts
+    MultipleEntityResponse<OrganizerDetailsDto> getPendingOrganizers();
+
+    //find all approved organizer accounts
+    MultipleEntityResponse<OrganizerDetailsDto> getApprovedOrganizers();
+
+    //find all disapproved organizer accounts
+    MultipleEntityResponse<OrganizerDetailsDto> getDisapprovedOrganizers();
 
     Organizer updateOrganizer(Long id, OrganizerUpdateDto organizerUpdateDto);
 
-
+    UpdateResponse<OrganizerDetailsDto> updateOrganizerStatus(Long id, OrganizerStatusDto organizerStatusDto);
 
     Boolean deleteOrganizer(Long id);
 }
