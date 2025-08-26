@@ -75,7 +75,7 @@ public class EventServiceImpl implements EventService {
 
         event.setEventName(eventDto.getEventName());
         event.setStartingDate(eventDto.getStartingDate());
-        event.setDateAdded(eventDto.getDateAdded());
+        event.setDateAdded(LocalDate.now());
         event.setEventCategory(category);
         event.setEventStatus(eventStatusRepository.findById(1L).orElse(null));
         event.setCoverImageLink(eventDto.getCoverImageLink());

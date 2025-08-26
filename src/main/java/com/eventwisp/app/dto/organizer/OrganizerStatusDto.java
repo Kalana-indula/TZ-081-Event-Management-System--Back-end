@@ -7,6 +7,7 @@ import lombok.Setter;
 @Getter
 public class OrganizerStatusDto {
 
+    private Boolean pendingApproval;
     private Boolean isApproved;
     private Boolean isDisapproved;
 }
