@@ -1,6 +1,6 @@
 package com.eventwisp.app.dto.response;
 
-import com.eventwisp.app.entity.Event;
+import com.eventwisp.app.dto.EventDetailsDto;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,5 +11,10 @@ import java.util.List;
 @Getter
 public class FindEventByOrganizerResponse {
     private String message;
-    private List<Event> eventsList= Collections.emptyList();
+    private List<EventDetailsDto> onGoingEvents=Collections.emptyList();
+    private List<EventDetailsDto> approvedEvents=Collections.emptyList();
+    private List<EventDetailsDto> disapprovedEvents=Collections.emptyList();
+    private List<EventDetailsDto> pendingApprovalEvents=Collections.emptyList();
+    private List<EventDetailsDto> completedEvents=Collections.emptyList();
+    private List<EventDetailsDto> allEvents= Collections.emptyList();
 }

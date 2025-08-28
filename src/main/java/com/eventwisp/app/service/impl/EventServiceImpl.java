@@ -1,8 +1,9 @@
 package com.eventwisp.app.service.impl;
 
+import com.eventwisp.app.dto.EventDetailsDto;
 import com.eventwisp.app.dto.EventDto;
 import com.eventwisp.app.dto.EventUpdateDto;
-import com.eventwisp.app.dto.ManagersEventDto;
+import com.eventwisp.app.dto.event.EventCounts;
 import com.eventwisp.app.dto.event.EventStatusDto;
 import com.eventwisp.app.dto.response.EventCreateResponse;
 import com.eventwisp.app.dto.response.FindEventByOrganizerResponse;
@@ -75,7 +76,7 @@ public class EventServiceImpl implements EventService {
 
         event.setEventName(eventDto.getEventName());
         event.setStartingDate(eventDto.getStartingDate());
-        event.setDateAdded(LocalDate.now());
+        event.setDateAdded(eventDto.getDateAdded());
         event.setEventCategory(category);
         event.setEventStatus(eventStatusRepository.findById(1L).orElse(null));
         event.setCoverImageLink(eventDto.getCoverImageLink());
@@ -127,10 +128,10 @@ public class EventServiceImpl implements EventService {
             return response;
         }
 
-        List<ManagersEventDto> managerSideEvents = new ArrayList<>();
+        List<EventDetailsDto> managerSideEvents = new ArrayList<>();
 
         for (Event event : eventsList) {
-            ManagersEventDto eventDetails = new ManagersEventDto();
+            EventDetailsDto eventDetails = new EventDetailsDto();
 
             eventDetails.setEventId(event.getId());
             eventDetails.setEventName(event.getEventName());
@@ -138,19 +139,6 @@ public class EventServiceImpl implements EventService {
             eventDetails.setOrganizer(event.getOrganizer().getFirstName() + " " + event.getOrganizer().getLastName());
             eventDetails.setDateAdded(event.getDateAdded());
             eventDetails.setStatus(event.getEventStatus().getStatusName());
-
-            //check event status
-//            if(event.getIsCompleted()){
-//                eventDetails.setStatus("Completed");
-//            }else if(event.getIsStarted()){
-//                eventDetails.setStatus("On Going");
-//            }else if(event.getIsDisapproved()){
-//                eventDetails.setStatus("Disapproved");
-//            }else if(event.getIsApproved()){
-//                    eventDetails.setStatus("Approved");
-//            }else{
-//                eventDetails.setStatus("Pending Approval");
-//            }
 
             managerSideEvents.add(eventDetails);
         }
@@ -164,6 +152,27 @@ public class EventServiceImpl implements EventService {
     @Override
     public Integer getAllOnGoingEventsCount() {
         return eventRepository.findAllOnGoingEvents().size();
+    }
+
+    @Override
+    public EventCounts getEventCounts(Long organizerId) {
+
+        EventCounts eventCounts = new EventCounts();
+
+        Integer onGoingEventsCount = eventRepository.findOrganizerEventsByStatus(organizerId,3).size();
+        Integer approvedEventsCount = eventRepository.findOrganizerEventsByStatus(organizerId,5).size();
+        Integer disapprovedEventsCount = eventRepository.findOrganizerEventsByStatus(organizerId,2).size();
+        Integer pendingApprovalEventsCount = eventRepository.findOrganizerEventsByStatus(organizerId,1).size();
+        Integer completedEventsCount = eventRepository.findOrganizerEventsByStatus(organizerId,4).size();
+        Integer allEventsCount = eventRepository.eventsByOrganizer(organizerId).size();
+
+        eventCounts.setOnGoingEventsCount(onGoingEventsCount);
+        eventCounts.setApprovedEventsCount(approvedEventsCount);
+        eventCounts.setDisapprovedEventsCount(disapprovedEventsCount);
+        eventCounts.setCompletedEventsCount(completedEventsCount);
+        eventCounts.setPendingApprovalEventsCount(pendingApprovalEventsCount);
+        eventCounts.setAllEventsCount(allEventsCount);
+        return eventCounts;
     }
 
 
@@ -186,7 +195,7 @@ public class EventServiceImpl implements EventService {
             return response;
         }
 
-        ManagersEventDto eventDetails = new ManagersEventDto();
+        EventDetailsDto eventDetails = new EventDetailsDto();
         eventDetails.setEventId(event.getId());
         eventDetails.setEventName(event.getEventName());
         eventDetails.setEventType(event.getEventCategory().getCategory());
@@ -197,7 +206,7 @@ public class EventServiceImpl implements EventService {
         eventDetails.setStatus(event.getEventStatus().getStatusName());
 
         // Wrap the single event in a list
-        List<ManagersEventDto> eventDetailsList = new ArrayList<>();
+        List<EventDetailsDto> eventDetailsList = new ArrayList<>();
         eventDetailsList.add(eventDetails);
 
         // Populate response
@@ -209,9 +218,9 @@ public class EventServiceImpl implements EventService {
 
     //get a single event details
     @Override
-    public SingleEntityResponse<ManagersEventDto> getSingleEventById(Long eventId) {
+    public SingleEntityResponse<EventDetailsDto> getSingleEventById(Long eventId) {
 
-        SingleEntityResponse<ManagersEventDto> response= new SingleEntityResponse<>();
+        SingleEntityResponse<EventDetailsDto> response= new SingleEntityResponse<>();
 
         Event existingEvent = eventRepository.findById(eventId).orElse(null);
 
@@ -220,7 +229,7 @@ public class EventServiceImpl implements EventService {
             return response;
         }
 
-        ManagersEventDto eventDetails = new ManagersEventDto();
+        EventDetailsDto eventDetails = new EventDetailsDto();
 
         eventDetails.setEventId(existingEvent.getId());
         eventDetails.setEventName(existingEvent.getEventName());
@@ -245,7 +254,7 @@ public class EventServiceImpl implements EventService {
 
 
     @Override
-    public ManagersEventsResponse getEventsByStatus(Long statusId) {
+    public ManagersEventsResponse getEventsByStatus(Integer statusId) {
 
         //response
         ManagersEventsResponse response = new ManagersEventsResponse();
@@ -257,10 +266,10 @@ public class EventServiceImpl implements EventService {
             return response;
         }
 
-        List<ManagersEventDto> managerSideEvents = new ArrayList<>();
+        List<EventDetailsDto> managerSideEvents = new ArrayList<>();
 
         for (Event event : eventsList) {
-            ManagersEventDto eventDetails = new ManagersEventDto();
+            EventDetailsDto eventDetails = new EventDetailsDto();
 
             eventDetails.setEventId(event.getId());
             eventDetails.setEventName(event.getEventName());
@@ -284,7 +293,7 @@ public class EventServiceImpl implements EventService {
 
         FindEventByOrganizerResponse response = new FindEventByOrganizerResponse();
 
-        //Check if organizer exists
+        // Check if organizer exists
         boolean isExist = organizerRepository.existsById(organizerId);
 
         if (!isExist) {
@@ -292,7 +301,7 @@ public class EventServiceImpl implements EventService {
             return response;
         }
 
-        //Find events by organizer
+        // Find all events by organizer
         List<Event> eventList = eventRepository.eventsByOrganizer(organizerId);
 
         if (eventList.isEmpty()) {
@@ -300,11 +309,69 @@ public class EventServiceImpl implements EventService {
             return response;
         }
 
+        // Map all events
+        List<EventDetailsDto> allEvents = eventList.stream()
+                .map(this::mapToDto)
+                .toList();
+
+        // Query and map each category
+        List<EventDetailsDto> onGoingEventDetails = eventRepository.findOrganizerEventsByStatus(organizerId, 3)
+                .stream()
+                .map(this::mapToDto)
+                .toList();
+
+        List<EventDetailsDto> approvedEventDetails = eventRepository.findOrganizerEventsByStatus(organizerId, 5)
+                .stream()
+                .map(this::mapToDto)
+                .toList();
+
+        List<EventDetailsDto> disapprovedEventDetails = eventRepository.findOrganizerEventsByStatus(organizerId, 2)
+                .stream()
+                .map(this::mapToDto)
+                .toList();
+
+        List<EventDetailsDto> pendingApprovalEventDetails = eventRepository.findOrganizerEventsByStatus(organizerId, 1)
+                .stream()
+                .map(this::mapToDto)
+                .toList();
+
+        List<EventDetailsDto> completedEventDetails = eventRepository.findOrganizerEventsByStatus(organizerId, 4)
+                .stream()
+                .map(this::mapToDto)
+                .toList();
+
+        // Set response
         response.setMessage("Events List");
-        response.setEventsList(eventList);
+        response.setAllEvents(allEvents);
+        response.setOnGoingEvents(onGoingEventDetails);
+        response.setApprovedEvents(approvedEventDetails);
+        response.setDisapprovedEvents(disapprovedEventDetails);
+        response.setPendingApprovalEvents(pendingApprovalEventDetails);
+        response.setCompletedEvents(completedEventDetails);
 
         return response;
     }
+
+    // Helper method to convert Event -> EventDetailsDto
+    private EventDetailsDto mapToDto(Event event) {
+        EventDetailsDto dto = new EventDetailsDto();
+        dto.setEventId(event.getId());
+        dto.setEventName(event.getEventName());
+        dto.setEventType(event.getEventCategory().getCategory());
+        dto.setOrganizer(event.getOrganizer().getFirstName() + " " + event.getOrganizer().getLastName());
+        dto.setOrganizerId(event.getOrganizer().getId());
+        dto.setDateAdded(event.getDateAdded());
+        dto.setStartingDate(event.getStartingDate());
+        dto.setCoverImageLink(event.getCoverImageLink());
+        dto.setEventDescription(event.getDescription());
+        dto.setIsApproved(event.getIsApproved());
+        dto.setIsStarted(event.getIsStarted());
+        dto.setIsCompleted(event.getIsCompleted());
+        dto.setIsDisapproved(event.getIsDisapproved());
+        dto.setStatus(event.getEventStatus().getStatusName());
+        return dto;
+    }
+
 
     //Update event
     @Override

@@ -49,6 +49,9 @@ public class Event {
     @Column(name = "is_completed")
     private Boolean isCompleted=false;
 
+    @Column(name = "earnings_by_event")
+    private Double earningsByEvent=0.0;
+
     //Create a column for foriegn key
     @ManyToOne
     @JoinColumn(name = "event_category_id")
