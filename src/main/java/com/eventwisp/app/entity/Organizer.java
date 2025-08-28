@@ -50,6 +50,9 @@ public class Organizer {
     @Column(name = "is_disapproved")
     private Boolean isDisapproved=false;
 
+    @Column(name = "total_earnings")
+    private Double totalEarnings=0.0;
+
     //Events of organizer
     @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL,mappedBy = "organizer")

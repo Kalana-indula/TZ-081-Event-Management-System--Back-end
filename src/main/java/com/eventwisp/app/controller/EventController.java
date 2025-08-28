@@ -2,7 +2,8 @@ package com.eventwisp.app.controller;
 
 import com.eventwisp.app.dto.EventDto;
 import com.eventwisp.app.dto.EventUpdateDto;
-import com.eventwisp.app.dto.ManagersEventDto;
+import com.eventwisp.app.dto.EventDetailsDto;
+import com.eventwisp.app.dto.event.EventCounts;
 import com.eventwisp.app.dto.event.EventStatusDto;
 import com.eventwisp.app.dto.response.EventCreateResponse;
 import com.eventwisp.app.dto.response.FindEventByOrganizerResponse;
@@ -100,25 +101,49 @@ public class EventController {
         }
     }
 
+    @GetMapping("/organizer/{organizerId}/events/counts")
+    public ResponseEntity<?> findEventCounts(@PathVariable Long organizerId){
+        try{
+            EventCounts eventCounts = eventService.getEventCounts(organizerId);
 
-    //Find events by organizer
-    @GetMapping("/organizers/{organizerId}/events")
-    public ResponseEntity<?> findEventsByOrganizer(@PathVariable Long organizerId){
-        try {
-            FindEventByOrganizerResponse response=eventService.findEventByOrganizer(organizerId);
-
-            if(response.getEventsList().isEmpty()){
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response.getMessage());
+            // Check if any events exist using the new allEventsCount field
+            if(eventCounts.getAllEventsCount() == 0) {
+                return ResponseEntity.status(HttpStatus.OK).body("No events found in any status");
             }
 
-            return ResponseEntity.status(HttpStatus.OK).body(response.getEventsList());
+            return ResponseEntity.status(HttpStatus.OK).body(eventCounts);
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 
+    //Find events by organizer
+    @GetMapping("/organizers/{organizerId}/events")
+    public ResponseEntity<FindEventByOrganizerResponse> findEventsByOrganizer(@PathVariable Long organizerId) {
+        try {
+            FindEventByOrganizerResponse response = eventService.findEventByOrganizer(organizerId);
+
+            if ("No organizer found for entered id".equals(response.getMessage())) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+
+            if ("No events found for the organizer".equals(response.getMessage())) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            // Return structured response instead of plain string
+            FindEventByOrganizerResponse errorResponse = new FindEventByOrganizerResponse();
+            errorResponse.setMessage("Internal server error: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+
     @GetMapping("/events/status/{statusId}")
-    public ResponseEntity<?> findEventByStatus(@PathVariable Long statusId){
+    public ResponseEntity<?> findEventByStatus(@PathVariable Integer statusId){
         try{
 
             ManagersEventsResponse response= eventService.getEventsByStatus(statusId);
@@ -154,7 +179,7 @@ public class EventController {
     @GetMapping("/events/{eventId}/details")
     public ResponseEntity<?> findSingleEventById(@PathVariable Long eventId) {
         try {
-            SingleEntityResponse<ManagersEventDto> response = eventService.getSingleEventById(eventId);
+            SingleEntityResponse<EventDetailsDto> response = eventService.getSingleEventById(eventId);
 
             // Check if event was found
             if (response.getEntityData() == null) {
