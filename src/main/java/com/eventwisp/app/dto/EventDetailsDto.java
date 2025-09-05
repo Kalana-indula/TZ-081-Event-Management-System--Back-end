@@ -3,6 +3,7 @@ package com.eventwisp.app.dto;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Setter
@@ -16,6 +17,7 @@ public class EventDetailsDto {
     private Long organizerId;
     private LocalDate dateAdded;
     private LocalDate startingDate;
+    private LocalDate dateCompleted;
     private String coverImageLink;
     private String eventDescription;
     private Boolean isApproved;
@@ -23,4 +25,8 @@ public class EventDetailsDto {
     private Boolean isCompleted;
     private Boolean isDisapproved;
     private String status;
+    private BigDecimal earningsByEvent;
+    private BigDecimal totalProfit;
+    private Double commission;
+    private Integer totalAttendeesCount;
 }

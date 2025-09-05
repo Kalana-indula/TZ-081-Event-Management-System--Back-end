@@ -3,6 +3,8 @@ package com.eventwisp.app.service.impl;
 import com.eventwisp.app.dto.TicketTypeUpdateDto;
 import com.eventwisp.app.dto.TicketUpdateDto;
 import com.eventwisp.app.dto.response.TicketUpdateResponse;
+import com.eventwisp.app.dto.response.general.MultipleEntityResponse;
+import com.eventwisp.app.dto.ticket.TicketDetailsDto;
 import com.eventwisp.app.entity.Ticket;
 import com.eventwisp.app.repository.TicketRepository;
 import com.eventwisp.app.service.TicketService;
@@ -37,8 +39,35 @@ public class TicketServiceImpl implements TicketService {
 
     //Find tickets by event
     @Override
-    public List<Ticket> findTicketsByEvent(Long id) {
-        return ticketRepository.findTicketsByEvent(id);
+    public MultipleEntityResponse<TicketDetailsDto> findTicketsByEvent(Long id) {
+
+        MultipleEntityResponse<TicketDetailsDto> response = new MultipleEntityResponse<>();
+
+        //find tickets list
+        List<Ticket> tickets = ticketRepository.findTicketsByEvent(id);
+
+        if(tickets.isEmpty()){
+            response.setMessage("No tickets found for the event");
+            return response;
+        }
+
+        List<TicketDetailsDto> dtos = new ArrayList<>();
+
+        // Map each Ticket entity to TicketDetailsDto
+        for (Ticket ticket : tickets) {
+            TicketDetailsDto dto = new TicketDetailsDto();
+            dto.setId(ticket.getId());
+            dto.setTicketType(ticket.getTicketType());
+            dto.setTicketPrice(ticket.getPrice());
+            dto.setTicketCount(ticket.getTicketCount());
+            dto.setSoldCount(ticket.getSoldCount());
+            dtos.add(dto);
+        }
+
+        response.setEntityList(dtos);
+        response.setMessage("Tickets retrieved successfully for event ID: " + id);
+
+        return response;
     }
 
     //Update existing ticket's details

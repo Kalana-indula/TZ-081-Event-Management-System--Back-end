@@ -3,10 +3,7 @@ package com.eventwisp.app.service.impl;
 import com.eventwisp.app.dto.BookingDto;
 import com.eventwisp.app.dto.response.CreateBookingResponse;
 import com.eventwisp.app.dto.response.FindBookingsByEventResponse;
-import com.eventwisp.app.entity.Booking;
-import com.eventwisp.app.entity.BookingSequenceTracker;
-import com.eventwisp.app.entity.Session;
-import com.eventwisp.app.entity.Ticket;
+import com.eventwisp.app.entity.*;
 import com.eventwisp.app.repository.*;
 import com.eventwisp.app.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +54,12 @@ public class BookingServiceImpl implements BookingService {
             return response;
         }
 
+        //Get event
+        Event event=existingSession.getEvent();
+
+        //get current attendees count for the event
+        int currentAttendeesCount=event.getTotalAttendeesCount();
+
         //create new booking object
         Booking booking=new Booking();
 
@@ -69,7 +72,7 @@ public class BookingServiceImpl implements BookingService {
         booking.setBookingDate(LocalDate.now());
         booking.setBookingTime(LocalTime.now());
         booking.setSession(existingSession);
-        booking.setEvent(existingSession.getEvent());
+        booking.setEvent(event);
 
         //Create a list to store tickets
         List<Ticket> bookedTickets=new ArrayList<>();
@@ -84,10 +87,12 @@ public class BookingServiceImpl implements BookingService {
             //check if the ticket is null
             if(ticket!=null){
                 int count=ticket.getTicketCount();
+                int soldCount=ticket.getSoldCount();
 
                 if(count>=0){
                     bookedTickets.add(ticket);
                     ticket.setTicketCount(count-1);
+                    ticket.setSoldCount(soldCount+1);
                     totalPrice+=ticket.getPrice();
 
                     ticketRepository.save(ticket);
@@ -166,4 +171,5 @@ public class BookingServiceImpl implements BookingService {
             return datePrefix + "-" + String.format("%03d", sequence);
         }
     }
+
 }

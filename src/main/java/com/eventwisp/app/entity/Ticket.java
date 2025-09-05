@@ -30,6 +30,9 @@ public class Ticket {
     @Column(name = "ticket_count")
     private Integer ticketCount;
 
+    @Column(name = "sold_count")
+    private Integer SoldCount=0;
+
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "event_id")
     private Event event;

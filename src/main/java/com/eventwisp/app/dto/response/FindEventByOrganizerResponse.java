@@ -4,6 +4,7 @@ import com.eventwisp.app.dto.EventDetailsDto;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 
@@ -11,6 +12,7 @@ import java.util.List;
 @Getter
 public class FindEventByOrganizerResponse {
     private String message;
+    private BigDecimal totalEarnings;
     private List<EventDetailsDto> onGoingEvents=Collections.emptyList();
     private List<EventDetailsDto> approvedEvents=Collections.emptyList();
     private List<EventDetailsDto> disapprovedEvents=Collections.emptyList();

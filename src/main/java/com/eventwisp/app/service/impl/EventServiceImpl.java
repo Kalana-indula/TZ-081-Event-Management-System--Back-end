@@ -10,10 +10,7 @@ import com.eventwisp.app.dto.response.FindEventByOrganizerResponse;
 import com.eventwisp.app.dto.response.ManagersEventsResponse;
 import com.eventwisp.app.dto.response.general.SingleEntityResponse;
 import com.eventwisp.app.dto.response.general.UpdateResponse;
-import com.eventwisp.app.entity.Event;
-import com.eventwisp.app.entity.EventCategory;
-import com.eventwisp.app.entity.Organizer;
-import com.eventwisp.app.entity.Ticket;
+import com.eventwisp.app.entity.*;
 import com.eventwisp.app.repository.*;
 import com.eventwisp.app.service.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,17 +34,21 @@ public class EventServiceImpl implements EventService {
 
     private EventStatusRepository eventStatusRepository;
 
+    private FinancialDataRepository financialDataRepository;
+
     @Autowired
     public EventServiceImpl(EventRepository eventRepository,
                             EventCategoryRepository eventCategoryRepository,
                             TicketRepository ticketRepository,
                             OrganizerRepository organizerRepository,
-                            EventStatusRepository eventStatusRepository) {
+                            EventStatusRepository eventStatusRepository,
+                            FinancialDataRepository financialDataRepository) {
         this.eventRepository = eventRepository;
         this.eventCategoryRepository = eventCategoryRepository;
         this.ticketRepository = ticketRepository;
         this.organizerRepository = organizerRepository;
         this.eventStatusRepository = eventStatusRepository;
+        this.financialDataRepository = financialDataRepository;
     }
 
     //Create a new event
@@ -60,6 +61,14 @@ public class EventServiceImpl implements EventService {
 
         //Find organizer
         Organizer organizer = organizerRepository.findById(eventDto.getOrganizerId()).orElse(null);
+
+        //find current commission
+        FinancialData data =financialDataRepository.findById(1).orElse(null);
+
+        if(data==null){
+            response.setMessage("No commission values are found");
+            return response;
+        }
 
         if (category == null) {
             response.setMessage("Invalid Category ");
@@ -76,12 +85,13 @@ public class EventServiceImpl implements EventService {
 
         event.setEventName(eventDto.getEventName());
         event.setStartingDate(eventDto.getStartingDate());
-        event.setDateAdded(eventDto.getDateAdded());
+        event.setDateAdded(LocalDate.now());
         event.setEventCategory(category);
         event.setEventStatus(eventStatusRepository.findById(1L).orElse(null));
         event.setCoverImageLink(eventDto.getCoverImageLink());
         event.setDescription(eventDto.getDescription());
         event.setOrganizer(organizer);
+        event.setCommission(data.getCommission());
 
         //Get ticket types of event
         List<Ticket> ticketTypes = eventDto.getTickets();
@@ -238,6 +248,7 @@ public class EventServiceImpl implements EventService {
         eventDetails.setOrganizerId(existingEvent.getOrganizer().getId());
         eventDetails.setDateAdded(existingEvent.getDateAdded());
         eventDetails.setStartingDate(existingEvent.getStartingDate());
+        eventDetails.setDateCompleted(existingEvent.getDateCompleted());
         eventDetails.setCoverImageLink(existingEvent.getCoverImageLink());
         eventDetails.setEventDescription(existingEvent.getDescription());
         eventDetails.setIsApproved(existingEvent.getIsApproved());
@@ -296,10 +307,14 @@ public class EventServiceImpl implements EventService {
         // Check if organizer exists
         boolean isExist = organizerRepository.existsById(organizerId);
 
+
         if (!isExist) {
             response.setMessage("No organizer found for entered id");
             return response;
         }
+
+        //find organizer details
+        Organizer existingOrganizer = organizerRepository.findById(organizerId).orElse(null);
 
         // Find all events by organizer
         List<Event> eventList = eventRepository.eventsByOrganizer(organizerId);
@@ -342,6 +357,7 @@ public class EventServiceImpl implements EventService {
 
         // Set response
         response.setMessage("Events List");
+        response.setTotalEarnings(existingOrganizer.getTotalEarnings());
         response.setAllEvents(allEvents);
         response.setOnGoingEvents(onGoingEventDetails);
         response.setApprovedEvents(approvedEventDetails);
@@ -361,6 +377,7 @@ public class EventServiceImpl implements EventService {
         dto.setOrganizer(event.getOrganizer().getFirstName() + " " + event.getOrganizer().getLastName());
         dto.setOrganizerId(event.getOrganizer().getId());
         dto.setDateAdded(event.getDateAdded());
+        dto.setDateCompleted(event.getDateCompleted());
         dto.setStartingDate(event.getStartingDate());
         dto.setCoverImageLink(event.getCoverImageLink());
         dto.setEventDescription(event.getDescription());
