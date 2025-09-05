@@ -38,14 +38,20 @@ public class SessionServiceImpl implements SessionService {
 
         Event existingEvent = eventRepository.findById(createSessionDto.getEventId()).orElse(null);
 
-        //Check if a session exists by id
+        //Check if an event exists by id
         if (existingEvent == null) {
             return null;
         }
 
+        //get the available sessions from that event
+        int sessionCount = sessionRepository.findSessionsByEvent(createSessionDto.getEventId()).size();
+
+        int nextSessionNumber=sessionCount+1;
+
         //create a new session
         Session session = new Session();
 
+        session.setSessionNumber("Session "+nextSessionNumber);
         session.setVenue(createSessionDto.getVenue());
         session.setDate(createSessionDto.getDate());
         session.setStartTime(createSessionDto.getStartTime());
@@ -90,10 +96,15 @@ public class SessionServiceImpl implements SessionService {
             SessionDetailsDto sessionData = new SessionDetailsDto();
 
             sessionData.setId(session.getId());
+            sessionData.setSessionNumber(session.getSessionNumber());
             sessionData.setVenue(session.getVenue());
             sessionData.setDate(session.getDate());
             sessionData.setStartTime(session.getStartTime());
             sessionData.setEndTime(session.getEndTime());
+            sessionData.setAttendees(session.getAttendees());
+            sessionData.setRevenue(session.getRevenue());
+            sessionData.setProfit(session.getProfit());
+
             sessionDetails.add(sessionData);
         }
 

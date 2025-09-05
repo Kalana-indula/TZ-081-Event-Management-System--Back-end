@@ -3,6 +3,8 @@ package com.eventwisp.app.dto.organizer;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 @Setter
 @Getter
 public class OrganizerDetailsDto {
@@ -15,4 +17,5 @@ public class OrganizerDetailsDto {
     private Boolean pendingApproval;
     private Boolean isApproved;
     private Boolean isDisapproved;
+    private BigDecimal earnings;
 }

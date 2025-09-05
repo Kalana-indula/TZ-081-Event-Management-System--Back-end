@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -23,6 +24,9 @@ public class Session {
     @Column(name = "id")
     private Long id;
 
+    @Column(name = "session_number")
+    private String sessionNumber;
+
     @Column(name = "venue")
     private String venue;
 
@@ -34,6 +38,15 @@ public class Session {
 
     @Column(name = "end_time")
     private LocalTime endTime;
+
+    @Column(name = "attendees")
+    private Integer attendees=0;
+
+    @Column(name = "revenue")
+    private BigDecimal revenue=BigDecimal.ZERO;
+
+    @Column(name = "profit")
+    private BigDecimal profit=BigDecimal.ZERO;
 
     //Event
     @ManyToOne

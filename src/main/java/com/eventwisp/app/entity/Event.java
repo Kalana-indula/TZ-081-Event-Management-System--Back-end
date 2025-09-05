@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -30,6 +31,9 @@ public class Event {
     @Column(name = "date_added")
     private LocalDate dateAdded;
 
+    @Column(name = "date_completed")
+    private LocalDate dateCompleted;
+
     @Column(name = "cover_image_link")
     private String coverImageLink;
 
@@ -50,7 +54,16 @@ public class Event {
     private Boolean isCompleted=false;
 
     @Column(name = "earnings_by_event")
-    private Double earningsByEvent=0.0;
+    private BigDecimal earningsByEvent=BigDecimal.ZERO;
+
+    @Column(name = "total_profit")
+    private BigDecimal totalProfit=BigDecimal.ZERO;
+
+    @Column(name = "commission")
+    private Double commission;
+
+    @Column(name = "total_attendees_count")
+    private Integer totalAttendeesCount=0;
 
     //Create a column for foriegn key
     @ManyToOne

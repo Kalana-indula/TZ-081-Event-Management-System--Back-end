@@ -68,6 +68,7 @@ public class OrganizerServiceImpl implements OrganizerService {
             details.setPendingApproval(organizer.getPendingApproval());
             details.setIsApproved(organizer.getIsApproved());
             details.setIsDisapproved(organizer.getIsDisapproved());
+            details.setEarnings(organizer.getTotalEarnings());
 
             organizersDetails.add(details);
         }

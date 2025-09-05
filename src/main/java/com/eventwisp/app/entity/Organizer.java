@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
@@ -51,7 +52,7 @@ public class Organizer {
     private Boolean isDisapproved=false;
 
     @Column(name = "total_earnings")
-    private Double totalEarnings=0.0;
+    private BigDecimal totalEarnings = BigDecimal.ZERO;
 
     //Events of organizer
     @JsonIgnore
