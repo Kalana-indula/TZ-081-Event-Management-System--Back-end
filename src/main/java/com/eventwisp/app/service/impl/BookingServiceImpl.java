@@ -1,8 +1,9 @@
 package com.eventwisp.app.service.impl;
 
 import com.eventwisp.app.dto.BookingDto;
+import com.eventwisp.app.dto.booking.BookingDetailsDto;
 import com.eventwisp.app.dto.response.CreateBookingResponse;
-import com.eventwisp.app.dto.response.FindBookingsByEventResponse;
+import com.eventwisp.app.dto.response.general.MultipleEntityResponse;
 import com.eventwisp.app.entity.*;
 import com.eventwisp.app.repository.*;
 import com.eventwisp.app.service.BookingService;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -25,6 +27,7 @@ public class BookingServiceImpl implements BookingService {
     private TicketRepository ticketRepository;
     private SessionRepository sessionRepository;
     private BookingSequenceRepository bookingSequenceRepository;
+    private OrganizerRepository organizerRepository;
 
     //Inject repositories
     @Autowired
@@ -32,36 +35,47 @@ public class BookingServiceImpl implements BookingService {
                               EventRepository eventRepository,
                               TicketRepository ticketRepository,
                               SessionRepository sessionRepository,
-                              BookingSequenceRepository bookingSequenceRepository) {
-        this.bookingRepository=bookingRepository;
-        this.eventRepository=eventRepository;
-        this.ticketRepository=ticketRepository;
-        this.sessionRepository=sessionRepository;
-        this.bookingSequenceRepository=bookingSequenceRepository;
+                              BookingSequenceRepository bookingSequenceRepository,
+                              OrganizerRepository organizerRepository) {
+        this.bookingRepository = bookingRepository;
+        this.eventRepository = eventRepository;
+        this.ticketRepository = ticketRepository;
+        this.sessionRepository = sessionRepository;
+        this.bookingSequenceRepository = bookingSequenceRepository;
+        this.organizerRepository = organizerRepository;
     }
 
     @Override
     @Transactional
     public CreateBookingResponse createBooking(BookingDto bookingDto) {
 
-        CreateBookingResponse response=new CreateBookingResponse();
+        CreateBookingResponse response = new CreateBookingResponse();
 
         //check if the session exists
-        Session existingSession=sessionRepository.findById(bookingDto.getSessionId()).orElse(null);
+        Session existingSession = sessionRepository.findById(bookingDto.getSessionId()).orElse(null);
 
-        if(existingSession==null){
+        if (existingSession == null) {
             response.setMessage("No event found for the corresponding id");
             return response;
         }
 
         //Get event
-        Event event=existingSession.getEvent();
+        Event event = existingSession.getEvent();
 
         //get current attendees count for the event
-        int currentAttendeesCount=event.getTotalAttendeesCount();
+        int currentEventAttendeesCount = event.getTotalAttendeesCount();
+
+        //get current total earnings
+        BigDecimal currentEarnings = event.getEarningsByEvent();
+
+        //get current profit
+        BigDecimal currentProfit = event.getTotalProfit();
+
+        //get commission for this event
+        double currentCommission = event.getCommission();
 
         //create new booking object
-        Booking booking=new Booking();
+        Booking booking = new Booking();
 
         booking.setBookingId(generateBookingId());
         booking.setFirstName(bookingDto.getFirstName());
@@ -75,30 +89,43 @@ public class BookingServiceImpl implements BookingService {
         booking.setEvent(event);
 
         //Create a list to store tickets
-        List<Ticket> bookedTickets=new ArrayList<>();
+        List<Ticket> bookedTickets = new ArrayList<>();
 
         //ticket price
-        double totalPrice=0.0;
+        double totalPrice = 0.0;
+        int attendance = 0;
 
         //Find tickets for each id
-        for(Long ticketId:bookingDto.getTicketIdList()){
-            Ticket ticket=ticketRepository.findById(ticketId).orElse(null);
+        for (Long ticketId : bookingDto.getTicketIdList()) {
+            Ticket ticket = ticketRepository.findById(ticketId).orElse(null);
 
             //check if the ticket is null
-            if(ticket!=null){
-                int count=ticket.getTicketCount();
-                int soldCount=ticket.getSoldCount();
+            if (ticket != null) {
 
-                if(count>=0){
+                //get currently available tickets count
+                int count = ticket.getTicketCount();
+                int soldCount = ticket.getSoldCount();
+
+                //check if all the tickets are sold out
+                if (count >= 0) {
                     bookedTickets.add(ticket);
-                    ticket.setTicketCount(count-1);
-                    ticket.setSoldCount(soldCount+1);
-                    totalPrice+=ticket.getPrice();
 
+                    //update ticket counts
+                    ticket.setTicketCount(count - 1);
+                    ticket.setSoldCount(soldCount + 1);
+                    totalPrice += ticket.getPrice();
+
+                    //update the ticket details in database
                     ticketRepository.save(ticket);
+
+                    //update the attendees count
+                    attendance += 1;
                 }
             }
         }
+
+        //calculate the profit from the booking
+        double profit = totalPrice - totalPrice * currentCommission;
 
         //set ticket count
         booking.setTicketCount(bookedTickets.size());
@@ -109,46 +136,132 @@ public class BookingServiceImpl implements BookingService {
         //set total price
         booking.setTotalPrice(totalPrice);
 
-        bookingRepository.save(booking);
+
+        //update event details
+        //get current event revenue,profit and attendees count
+        event.setTotalAttendeesCount(currentEventAttendeesCount + attendance);
+        event.setEarningsByEvent(currentEarnings.add(BigDecimal.valueOf(totalPrice)));
+        event.setTotalProfit(currentProfit.add(BigDecimal.valueOf(profit)));
+
+        //below method is not mandatory as saving handles by @Transactional (dirty checking)
+        eventRepository.save(event);
+
+        //get current session revenue,profit and attendees count
+        BigDecimal currentSessionRevenue = existingSession.getRevenue();
+        BigDecimal currentSessionProfit = existingSession.getProfit();
+        int currentSessionAttendees = existingSession.getAttendees();
+
+        //update session details
+        existingSession.setRevenue(currentSessionRevenue.add(BigDecimal.valueOf(totalPrice)));
+        existingSession.setProfit(currentSessionProfit.add(BigDecimal.valueOf(profit)));
+        existingSession.setAttendees(currentSessionAttendees + attendance);
+
+        sessionRepository.save(existingSession);
+
+        //get organizer details
+        Organizer organizer = event.getOrganizer();
+
+        BigDecimal currentEarningsByOrganizer = organizer.getTotalEarnings();
+        BigDecimal currentBalance = organizer.getCurrentBalance();
+
+        //update organizer earnings
+        organizer.setTotalEarnings(currentEarningsByOrganizer.add(BigDecimal.valueOf(profit)));
+        organizer.setCurrentBalance(currentBalance.add(BigDecimal.valueOf(profit)));
+        organizerRepository.save(organizer);
+
+        Booking newBooking = bookingRepository.save(booking);
+
+        //get new booking details
+        BookingDetailsDto bookingDetails = new BookingDetailsDto();
+
+        bookingDetails.setBookingId(newBooking.getBookingId());
+        bookingDetails.setName(newBooking.getFirstName() + " " + newBooking.getLastName());
+        bookingDetails.setEmail(newBooking.getEmail());
+        bookingDetails.setPhone(newBooking.getPhone());
+        bookingDetails.setNic(newBooking.getIdNumber());
+
 
         response.setMessage("Booking successful");
-        response.setBooking(booking);
+        response.setBookingDetails(bookingDetails);
 
         return response;
     }
 
     //get all booking details
     @Override
-    public List<Booking> findAllBookings() {
-        return bookingRepository.findAll();
+    public MultipleEntityResponse<BookingDetailsDto> findAllBookings() {
+
+        MultipleEntityResponse<BookingDetailsDto> response = new MultipleEntityResponse<>();
+
+        //get all bookings
+        List<Booking> bookings = bookingRepository.findAll();
+
+        if (bookings.isEmpty()) {
+            response.setMessage("No bookings found");
+            return response;
+        }
+
+        List<BookingDetailsDto> bookingsDetails = new ArrayList<>();
+
+        for (Booking booking : bookings) {
+            BookingDetailsDto dto = new BookingDetailsDto();
+
+            dto.setBookingId(booking.getBookingId());
+            dto.setName(booking.getFirstName() + " " + booking.getLastName());
+            dto.setEmail(booking.getEmail());
+            dto.setPhone(booking.getPhone());
+            dto.setNic(booking.getIdNumber());
+
+            bookingsDetails.add(dto);
+        }
+
+        response.setMessage("Booking details");
+        response.setEntityList(bookingsDetails);
+
+        return response;
     }
 
     @Override
-    public FindBookingsByEventResponse findBookingsByEvent(Long eventId) {
+    public MultipleEntityResponse<BookingDetailsDto> findBookingsByEvent(Long eventId) {
 
-        FindBookingsByEventResponse response=new FindBookingsByEventResponse();
+        MultipleEntityResponse<BookingDetailsDto> response = new MultipleEntityResponse<>();
 
-        //check if event exists
-        boolean isExist=eventRepository.existsById(eventId);
+        // check if event exists
+        boolean isExist = eventRepository.existsById(eventId);
 
-        if(!isExist){
+        if (!isExist) {
             response.setMessage("No event found for entered id");
             return response;
         }
 
-        List<Booking> bookingList=bookingRepository.bookingsByEvent(eventId);
+        // fetch bookings
+        List<Booking> bookingList = bookingRepository.bookingsByEvent(eventId);
 
-        //check if the list is empty
-        if(bookingList.isEmpty()){
+        // check if the list is empty
+        if (bookingList.isEmpty()) {
             response.setMessage("No bookings found for the event");
             return response;
         }
 
+        // map bookings -> DTOs
+        List<BookingDetailsDto> bookingDtos = new ArrayList<>();
+        for (Booking booking : bookingList) {
+            BookingDetailsDto dto = new BookingDetailsDto();
+            dto.setBookingId(booking.getBookingId());
+            dto.setName(booking.getFirstName() + " " + booking.getLastName());
+            dto.setEmail(booking.getEmail());
+            dto.setPhone(booking.getPhone());
+            dto.setNic(booking.getIdNumber());
+
+            bookingDtos.add(dto);
+        }
+
         response.setMessage("Bookings List");
-        response.setBookings(bookingList);
+        response.setEntityList(bookingDtos);
 
         return response;
     }
+
 
     //generate booking id
     private String generateBookingId() {

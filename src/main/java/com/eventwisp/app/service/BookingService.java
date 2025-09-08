@@ -1,12 +1,10 @@
 package com.eventwisp.app.service;
 
 import com.eventwisp.app.dto.BookingDto;
+import com.eventwisp.app.dto.booking.BookingDetailsDto;
 import com.eventwisp.app.dto.response.CreateBookingResponse;
-import com.eventwisp.app.dto.response.FindBookingsByEventResponse;
-import com.eventwisp.app.entity.Booking;
+import com.eventwisp.app.dto.response.general.MultipleEntityResponse;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public interface BookingService {
@@ -14,8 +12,8 @@ public interface BookingService {
     CreateBookingResponse createBooking(BookingDto bookingDto);
 
     //Find all bookings
-    List<Booking> findAllBookings();
+    MultipleEntityResponse<BookingDetailsDto> findAllBookings();
 
     //Find all bookings by an event
-    FindBookingsByEventResponse findBookingsByEvent(Long eventId);
+    MultipleEntityResponse<BookingDetailsDto> findBookingsByEvent(Long eventId);
 }

@@ -54,8 +54,17 @@ public class Organizer {
     @Column(name = "total_earnings")
     private BigDecimal totalEarnings = BigDecimal.ZERO;
 
+    @Column(name = "total_withdrawals")
+    private BigDecimal totalWithdrawals = BigDecimal.ZERO;
+
+    @Column(name = "current_balance")
+    private BigDecimal currentBalance= BigDecimal.ZERO;
+
     //Events of organizer
     @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL,mappedBy = "organizer")
     private List<Event> eventsList;
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL,mappedBy = "organizer")
+    private List<Transaction> transactionsList;
 }

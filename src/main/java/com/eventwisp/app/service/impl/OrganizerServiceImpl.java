@@ -1,6 +1,7 @@
 package com.eventwisp.app.service.impl;
 
 import com.eventwisp.app.dto.OrganizerUpdateDto;
+import com.eventwisp.app.dto.organizer.EarningDetails;
 import com.eventwisp.app.dto.organizer.OrganizerDetailsDto;
 import com.eventwisp.app.dto.organizer.OrganizerStatusDto;
 import com.eventwisp.app.dto.response.general.MultipleEntityResponse;
@@ -68,7 +69,7 @@ public class OrganizerServiceImpl implements OrganizerService {
             details.setPendingApproval(organizer.getPendingApproval());
             details.setIsApproved(organizer.getIsApproved());
             details.setIsDisapproved(organizer.getIsDisapproved());
-            details.setEarnings(organizer.getTotalEarnings());
+            details.setTotalEarnings(organizer.getTotalEarnings());
 
             organizersDetails.add(details);
         }
@@ -113,6 +114,9 @@ public class OrganizerServiceImpl implements OrganizerService {
         details.setPendingApproval(organizer.getPendingApproval());
         details.setIsApproved(organizer.getIsApproved());
         details.setIsDisapproved(organizer.getIsDisapproved());
+        details.setTotalEarnings(organizer.getTotalEarnings());
+        details.setTotalWithdrawals(organizer.getTotalWithdrawals());
+        details.setCurrentBalance(organizer.getCurrentBalance());
 
         // Set the response
         response.setMessage("Organizer details found");
@@ -223,6 +227,32 @@ public class OrganizerServiceImpl implements OrganizerService {
 
         response.setEntityList(organizersDetails);
         response.setMessage("Disapproved organizer details found");
+
+        return response;
+    }
+
+    @Override
+    public SingleEntityResponse<EarningDetails> getEarningsByOrganizer(Long organizerId) {
+
+        //create response object
+        SingleEntityResponse<EarningDetails> response = new SingleEntityResponse<>();
+
+        //fetch earning details from organizer
+        Organizer organizer=organizerRepository.findById(organizerId).orElse(null);
+
+        if(organizer == null) {
+            response.setMessage("Organizer not found");
+            return response;
+        }
+
+        EarningDetails earningDetails=new EarningDetails();
+
+        earningDetails.setTotalEarnings(organizer.getTotalEarnings());
+        earningDetails.setCurrentBalance(organizer.getCurrentBalance());
+        earningDetails.setTotalWithdrawals(organizer.getTotalWithdrawals());
+
+        response.setMessage("Earning details of organizer : "+organizer.getFirstName()+" "+organizer.getLastName());
+        response.setEntityData(earningDetails);
 
         return response;
     }

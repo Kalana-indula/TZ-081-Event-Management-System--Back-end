@@ -17,5 +17,7 @@ public class OrganizerDetailsDto {
     private Boolean pendingApproval;
     private Boolean isApproved;
     private Boolean isDisapproved;
-    private BigDecimal earnings;
+    private BigDecimal totalEarnings;
+    private BigDecimal totalWithdrawals;
+    private BigDecimal currentBalance;
 }
