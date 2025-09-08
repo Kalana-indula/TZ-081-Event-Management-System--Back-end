@@ -8,6 +8,7 @@ import com.eventwisp.app.dto.event.EventStatusDto;
 import com.eventwisp.app.dto.response.EventCreateResponse;
 import com.eventwisp.app.dto.response.FindEventByOrganizerResponse;
 import com.eventwisp.app.dto.response.ManagersEventsResponse;
+import com.eventwisp.app.dto.response.general.MultipleEntityResponse;
 import com.eventwisp.app.dto.response.general.SingleEntityResponse;
 import com.eventwisp.app.dto.response.general.UpdateResponse;
 import com.eventwisp.app.entity.*;
@@ -256,6 +257,10 @@ public class EventServiceImpl implements EventService {
         eventDetails.setIsCompleted(existingEvent.getIsCompleted());
         eventDetails.setIsDisapproved(existingEvent.getIsDisapproved());
         eventDetails.setStatus(existingEvent.getEventStatus().getStatusName());
+        eventDetails.setCommission(existingEvent.getCommission());
+        eventDetails.setTotalAttendeesCount(existingEvent.getTotalAttendeesCount());
+        eventDetails.setEarningsByEvent(existingEvent.getEarningsByEvent());
+        eventDetails.setTotalProfit(existingEvent.getTotalProfit());
 
         response.setMessage("Event details fetched successfully");
         response.setEntityData(eventDetails);
@@ -265,15 +270,24 @@ public class EventServiceImpl implements EventService {
 
 
     @Override
-    public ManagersEventsResponse getEventsByStatus(Integer statusId) {
+    public MultipleEntityResponse<EventDetailsDto> getEventsByStatus(Integer statusId) {
 
-        //response
-        ManagersEventsResponse response = new ManagersEventsResponse();
+        MultipleEntityResponse<EventDetailsDto> response= new MultipleEntityResponse<>();
+
+        //validate status
+        boolean isExist=eventStatusRepository.existsById(statusId.longValue());
+
+        if (!isExist) {
+            response.setMessage("Event status not found");
+            response.setEntityList(new ArrayList<>());
+            return response;
+        }
 
         List<Event> eventsList= eventRepository.findEventByStatus(statusId);
 
-        if(eventsList.isEmpty()){
+        if (eventsList.isEmpty()) {
             response.setMessage("No events found");
+            response.setEntityList(new ArrayList<>());
             return response;
         }
 
@@ -292,7 +306,7 @@ public class EventServiceImpl implements EventService {
             managerSideEvents.add(eventDetails);
         }
 
-        response.setEventDetails(managerSideEvents);
+        response.setEntityList(managerSideEvents);
         response.setMessage("Event details fetched successfully");
 
         return response;

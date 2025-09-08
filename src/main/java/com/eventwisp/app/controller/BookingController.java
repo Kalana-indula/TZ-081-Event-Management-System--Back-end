@@ -1,16 +1,14 @@
 package com.eventwisp.app.controller;
 
 import com.eventwisp.app.dto.BookingDto;
+import com.eventwisp.app.dto.booking.BookingDetailsDto;
 import com.eventwisp.app.dto.response.CreateBookingResponse;
-import com.eventwisp.app.dto.response.FindBookingsByEventResponse;
-import com.eventwisp.app.entity.Booking;
+import com.eventwisp.app.dto.response.general.MultipleEntityResponse;
 import com.eventwisp.app.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -31,7 +29,7 @@ public class BookingController {
         try{
             CreateBookingResponse response= bookingService.createBooking(bookingDto);
 
-            if(response.getBooking()==null){
+            if(response.getBookingDetails()==null){
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response.getMessage());
             }
 
@@ -45,9 +43,9 @@ public class BookingController {
     @GetMapping("/bookings")
     public ResponseEntity<?> findAllBookings(){
         try {
-            List<Booking> bookings=bookingService.findAllBookings();
+            MultipleEntityResponse<BookingDetailsDto> bookings=bookingService.findAllBookings();
 
-            if(bookings.isEmpty()){
+            if(bookings.getEntityList().isEmpty()){
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No bookings found");
             }
 
@@ -57,21 +55,22 @@ public class BookingController {
         }
     }
 
-    //find bookings by id
+    // find bookings by event id
     @GetMapping("/events/{eventId}/bookings")
-    public ResponseEntity<?> findBookingsByEvent(@PathVariable Long eventId){
+    public ResponseEntity<?> findBookingsByEvent(@PathVariable Long eventId) {
         try {
-            //get bookings
-            FindBookingsByEventResponse response =bookingService.findBookingsByEvent(eventId);
+            // get bookings
+            MultipleEntityResponse<BookingDetailsDto> response = bookingService.findBookingsByEvent(eventId);
 
-            //check if the response has an empty booking list
-            if(response.getBookings().isEmpty()){
+            // check if the response has an empty booking list
+            if (response.getEntityList() == null || response.getEntityList().isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response.getMessage());
             }
 
             return ResponseEntity.status(HttpStatus.OK).body(response);
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+
 }

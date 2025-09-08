@@ -1,13 +1,14 @@
 package com.eventwisp.app.service;
 
+import com.eventwisp.app.dto.EventDetailsDto;
 import com.eventwisp.app.dto.EventDto;
 import com.eventwisp.app.dto.EventUpdateDto;
-import com.eventwisp.app.dto.EventDetailsDto;
 import com.eventwisp.app.dto.event.EventCounts;
 import com.eventwisp.app.dto.event.EventStatusDto;
 import com.eventwisp.app.dto.response.EventCreateResponse;
 import com.eventwisp.app.dto.response.FindEventByOrganizerResponse;
 import com.eventwisp.app.dto.response.ManagersEventsResponse;
+import com.eventwisp.app.dto.response.general.MultipleEntityResponse;
 import com.eventwisp.app.dto.response.general.SingleEntityResponse;
 import com.eventwisp.app.dto.response.general.UpdateResponse;
 import com.eventwisp.app.entity.Event;
@@ -35,7 +36,7 @@ public interface EventService {
 
     SingleEntityResponse<EventDetailsDto> getSingleEventById(Long eventId);
 
-    ManagersEventsResponse getEventsByStatus(Integer statusId);
+    MultipleEntityResponse<EventDetailsDto> getEventsByStatus(Integer statusId);
 
     //get events by organizer
     FindEventByOrganizerResponse findEventByOrganizer(Long organizerId);

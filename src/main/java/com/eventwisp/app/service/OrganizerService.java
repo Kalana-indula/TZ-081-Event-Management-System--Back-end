@@ -1,6 +1,7 @@
 package com.eventwisp.app.service;
 
 import com.eventwisp.app.dto.OrganizerUpdateDto;
+import com.eventwisp.app.dto.organizer.EarningDetails;
 import com.eventwisp.app.dto.organizer.OrganizerDetailsDto;
 import com.eventwisp.app.dto.organizer.OrganizerStatusDto;
 import com.eventwisp.app.dto.response.general.MultipleEntityResponse;
@@ -31,6 +32,9 @@ public interface OrganizerService {
 
     //find all disapproved organizer accounts
     MultipleEntityResponse<OrganizerDetailsDto> getDisapprovedOrganizers();
+
+    //get earnings by organizer
+    SingleEntityResponse<EarningDetails> getEarningsByOrganizer(Long organizerId);
 
     Organizer updateOrganizer(Long id, OrganizerUpdateDto organizerUpdateDto);
 

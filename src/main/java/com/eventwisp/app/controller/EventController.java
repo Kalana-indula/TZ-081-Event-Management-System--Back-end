@@ -8,6 +8,7 @@ import com.eventwisp.app.dto.event.EventStatusDto;
 import com.eventwisp.app.dto.response.EventCreateResponse;
 import com.eventwisp.app.dto.response.FindEventByOrganizerResponse;
 import com.eventwisp.app.dto.response.ManagersEventsResponse;
+import com.eventwisp.app.dto.response.general.MultipleEntityResponse;
 import com.eventwisp.app.dto.response.general.SingleEntityResponse;
 import com.eventwisp.app.dto.response.general.UpdateResponse;
 import com.eventwisp.app.entity.Event;
@@ -145,12 +146,11 @@ public class EventController {
     @GetMapping("/events/status/{statusId}")
     public ResponseEntity<?> findEventByStatus(@PathVariable Integer statusId){
         try{
+            MultipleEntityResponse<EventDetailsDto> response= eventService.getEventsByStatus(statusId);
 
-            ManagersEventsResponse response= eventService.getEventsByStatus(statusId);
-
-            if(response.getEventDetails().isEmpty()){
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response.getMessage());
-            }
+//            if(response.getEntityList().isEmpty()){
+//                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+//            }
 
             return ResponseEntity.status(HttpStatus.OK).body(response);
         }catch (Exception e){

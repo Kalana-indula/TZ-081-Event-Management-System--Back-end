@@ -104,6 +104,9 @@ public class SessionServiceImpl implements SessionService {
             sessionData.setAttendees(session.getAttendees());
             sessionData.setRevenue(session.getRevenue());
             sessionData.setProfit(session.getProfit());
+            sessionData.setAttendees(session.getAttendees());
+            sessionData.setRevenue(session.getRevenue());
+            sessionData.setProfit(session.getProfit());
 
             sessionDetails.add(sessionData);
         }
