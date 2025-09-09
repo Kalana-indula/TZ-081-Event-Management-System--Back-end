@@ -382,6 +382,39 @@ public class EventServiceImpl implements EventService {
         return response;
     }
 
+    //find event details by category
+    @Override
+    public MultipleEntityResponse<EventDetailsDto> findEventsByCategory(String categoryName) {
+
+        MultipleEntityResponse<EventDetailsDto> response = new MultipleEntityResponse<>();
+
+        // Check if category exists (derived method)
+        boolean categoryExists = eventCategoryRepository.existsByCategory(categoryName);
+        if (!categoryExists) {
+            response.setMessage("Category not found: " + categoryName);
+            return response;
+        }
+
+        // Fetch events
+        List<Event> eventsList = eventRepository.findByEventCategoryCategory(categoryName);
+
+        // Check if events were found
+        if (eventsList.isEmpty()) {
+            response.setMessage("No events found for category: " + categoryName);
+            return response;
+        }
+
+        // Convert Event entities to EventDetailsDto objects using the helper method
+        List<EventDetailsDto> eventDetails = eventsList.stream()
+                .map(this::mapToDto)
+                .toList();
+
+        response.setEntityList(eventDetails);
+        response.setMessage("Events found for category: " + categoryName);
+
+        return response;
+    }
+
     // Helper method to convert Event -> EventDetailsDto
     private EventDetailsDto mapToDto(Event event) {
         EventDetailsDto dto = new EventDetailsDto();
@@ -400,6 +433,11 @@ public class EventServiceImpl implements EventService {
         dto.setIsCompleted(event.getIsCompleted());
         dto.setIsDisapproved(event.getIsDisapproved());
         dto.setStatus(event.getEventStatus().getStatusName());
+        dto.setEarningsByEvent(event.getEarningsByEvent());
+        dto.setTotalProfit(event.getTotalProfit());
+        dto.setCommission(event.getCommission());
+        dto.setTotalAttendeesCount(event.getTotalAttendeesCount());
+
         return dto;
     }
 
