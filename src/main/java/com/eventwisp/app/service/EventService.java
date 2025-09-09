@@ -41,6 +41,9 @@ public interface EventService {
     //get events by organizer
     FindEventByOrganizerResponse findEventByOrganizer(Long organizerId);
 
+    //get events by category
+    MultipleEntityResponse<EventDetailsDto> findEventsByCategory(String categoryName);
+
     Event updateEvent(Long id, EventUpdateDto eventUpdateDto);
 
     //update event status

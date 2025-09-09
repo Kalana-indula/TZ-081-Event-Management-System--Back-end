@@ -6,4 +6,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface EventCategoryRepository extends JpaRepository<EventCategory,Long> {
+
+    //check if category exists
+    boolean existsByCategory(String categoryName);
 }
