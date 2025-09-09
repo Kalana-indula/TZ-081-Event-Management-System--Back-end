@@ -53,6 +53,9 @@ public class Event {
     @Column(name = "is_completed")
     private Boolean isCompleted=false;
 
+    @Column(name = "is_published")
+    private Boolean isPublished=false;
+
     @Column(name = "earnings_by_event")
     private BigDecimal earningsByEvent=BigDecimal.ZERO;
 

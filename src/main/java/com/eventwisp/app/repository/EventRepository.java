@@ -26,5 +26,4 @@ public interface EventRepository extends JpaRepository<Event,Long> {
 
     //find events by category
     List<Event> findByEventCategoryCategory(String categoryName);
-
 }
