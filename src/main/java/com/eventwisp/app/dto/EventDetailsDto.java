@@ -24,6 +24,7 @@ public class EventDetailsDto {
     private Boolean isStarted;
     private Boolean isCompleted;
     private Boolean isDisapproved;
+    private Boolean isPublished;
     private String status;
     private BigDecimal earningsByEvent;
     private BigDecimal totalProfit;

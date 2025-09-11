@@ -179,7 +179,7 @@ public class EventController {
     @GetMapping("/events/categories/{categoryName}")
     public ResponseEntity<?> findEventsByCategory(@PathVariable String categoryName) {
         try {
-            MultipleEntityResponse<EventDetailsDto> response = eventService.findEventsByCategory(categoryName);
+            MultipleEntityResponse<EventDetailsDto> response = eventService.findUpCommingEventsByCategory(categoryName);
 
             // Check if any events were found for this category
             if (response.getEntityList().isEmpty()) {
@@ -206,6 +206,23 @@ public class EventController {
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    //publish event
+    @PutMapping("/events/{eventId}/publish")
+    public ResponseEntity<?> setEventAsPublic(@PathVariable Long eventId) {
+        try {
+            SingleEntityResponse<EventStatusDto> response = eventService.setEventPublic(eventId);
+
+            // Check if event was found and updated
+            if (response.getEntityData() == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response.getMessage());
+            }
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error publishing event: " + e.getMessage());
         }
     }
 

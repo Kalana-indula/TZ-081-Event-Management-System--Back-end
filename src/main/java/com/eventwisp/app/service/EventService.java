@@ -42,7 +42,10 @@ public interface EventService {
     FindEventByOrganizerResponse findEventByOrganizer(Long organizerId);
 
     //get events by category
-    MultipleEntityResponse<EventDetailsDto> findEventsByCategory(String categoryName);
+    MultipleEntityResponse<EventDetailsDto> findUpCommingEventsByCategory(String categoryName);
+
+    //make event public
+    SingleEntityResponse<EventStatusDto> setEventPublic(Long eventId);
 
     Event updateEvent(Long id, EventUpdateDto eventUpdateDto);
 

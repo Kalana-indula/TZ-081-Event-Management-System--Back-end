@@ -64,11 +64,6 @@ public class TicketController {
         try {
             MultipleEntityResponse<TicketDetailsDto> response = ticketService.findTicketsByEvent(id);
 
-            if (response.getEntityList() == null || response.getEntityList().isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response.getMessage());
-                // Use the message from the service
-            }
-
             return ResponseEntity.status(HttpStatus.OK).body(response);
             // Return the entire response object
         } catch (Exception e) {
