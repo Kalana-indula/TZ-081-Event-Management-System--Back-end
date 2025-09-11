@@ -62,11 +62,6 @@ public class BookingController {
             // get bookings
             MultipleEntityResponse<BookingDetailsDto> response = bookingService.findBookingsByEvent(eventId);
 
-            // check if the response has an empty booking list
-            if (response.getEntityList() == null || response.getEntityList().isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response.getMessage());
-            }
-
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());

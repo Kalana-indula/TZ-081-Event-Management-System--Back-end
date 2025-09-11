@@ -255,6 +255,7 @@ public class EventServiceImpl implements EventService {
         eventDetails.setIsApproved(existingEvent.getIsApproved());
         eventDetails.setIsStarted(existingEvent.getIsStarted());
         eventDetails.setIsCompleted(existingEvent.getIsCompleted());
+        eventDetails.setIsPublished(existingEvent.getIsPublished());
         eventDetails.setIsDisapproved(existingEvent.getIsDisapproved());
         eventDetails.setStatus(existingEvent.getEventStatus().getStatusName());
         eventDetails.setCommission(existingEvent.getCommission());
@@ -384,7 +385,7 @@ public class EventServiceImpl implements EventService {
 
     //find event details by category
     @Override
-    public MultipleEntityResponse<EventDetailsDto> findEventsByCategory(String categoryName) {
+    public MultipleEntityResponse<EventDetailsDto> findUpCommingEventsByCategory(String categoryName) {
 
         MultipleEntityResponse<EventDetailsDto> response = new MultipleEntityResponse<>();
 
@@ -396,7 +397,7 @@ public class EventServiceImpl implements EventService {
         }
 
         // Fetch events
-        List<Event> eventsList = eventRepository.findByEventCategoryCategory(categoryName);
+        List<Event> eventsList = eventRepository.findUpCommingEventsByCategory(categoryName);
 
         // Check if events were found
         if (eventsList.isEmpty()) {
@@ -411,6 +412,38 @@ public class EventServiceImpl implements EventService {
 
         response.setEntityList(eventDetails);
         response.setMessage("Events found for category: " + categoryName);
+
+        return response;
+    }
+
+    @Override
+    public SingleEntityResponse<EventStatusDto> setEventPublic(Long eventId) {
+
+        SingleEntityResponse<EventStatusDto> response = new SingleEntityResponse<>();
+
+        //Find event
+        Event existingEvent=eventRepository.findById(eventId).orElse(null);
+
+        if(existingEvent==null) {
+            response.setMessage("No event found for id " + eventId);
+            return response;
+        }
+
+        EventStatusDto eventStatusDto = new EventStatusDto();
+
+        existingEvent.setIsPublished(true);
+
+        //update event
+        Event updatedEvent = eventRepository.save(existingEvent);
+
+        eventStatusDto.setIsPublic(updatedEvent.getIsPublished());
+        eventStatusDto.setIsCompleted(updatedEvent.getIsCompleted());
+        eventStatusDto.setIsApproved(updatedEvent.getIsApproved());
+        eventStatusDto.setIsDisapproved(updatedEvent.getIsDisapproved());
+        eventStatusDto.setIsStarted(updatedEvent.getIsStarted());
+
+        response.setMessage("Event is set as public");
+        response.setEntityData(eventStatusDto);
 
         return response;
     }
@@ -432,6 +465,7 @@ public class EventServiceImpl implements EventService {
         dto.setIsStarted(event.getIsStarted());
         dto.setIsCompleted(event.getIsCompleted());
         dto.setIsDisapproved(event.getIsDisapproved());
+        dto.setIsPublished(event.getIsPublished());
         dto.setStatus(event.getEventStatus().getStatusName());
         dto.setEarningsByEvent(event.getEarningsByEvent());
         dto.setTotalProfit(event.getTotalProfit());

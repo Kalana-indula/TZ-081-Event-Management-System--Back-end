@@ -10,4 +10,5 @@ public class EventStatusDto {
     private Boolean isDisapproved;
     private Boolean isStarted;
     private Boolean isCompleted;
+    private Boolean isPublic;
 }

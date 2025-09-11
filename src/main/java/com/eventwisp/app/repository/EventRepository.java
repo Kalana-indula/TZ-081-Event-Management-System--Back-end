@@ -3,6 +3,7 @@ package com.eventwisp.app.repository;
 import com.eventwisp.app.entity.Event;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -24,7 +25,7 @@ public interface EventRepository extends JpaRepository<Event,Long> {
     @Query("SELECT e FROM Event e WHERE e.organizer.id = :organizerId AND e.eventStatus.id = :statusId")
     List<Event> findOrganizerEventsByStatus(Long organizerId, Integer statusId);
 
-    //find events by category
-    List<Event> findByEventCategoryCategory(String categoryName);
-
+    //find up comming events
+    @Query("SELECT e FROM Event e WHERE e.eventCategory.category = :categoryName AND e.isPublished = true AND e.isApproved = true AND e.startingDate > CURRENT_DATE ORDER BY e.startingDate ASC")
+    List<Event> findUpCommingEventsByCategory(@Param("categoryName") String categoryName);
 }

@@ -64,11 +64,6 @@ public class SessionController {
             // Find session by id
             FindSessionByEventResponse response= sessionService.findSessionsByEvent(eventId);
 
-            //check if the session list is empty
-            if(response.getSessionList().isEmpty()){
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response.getMessage());
-            }
-
             return ResponseEntity.status(HttpStatus.OK).body(response);
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
