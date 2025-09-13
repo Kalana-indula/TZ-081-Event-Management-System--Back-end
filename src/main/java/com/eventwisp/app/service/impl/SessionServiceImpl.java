@@ -1,11 +1,15 @@
 package com.eventwisp.app.service.impl;
 
 import com.eventwisp.app.dto.response.FindSessionByEventResponse;
+import com.eventwisp.app.dto.response.general.MultipleEntityResponse;
 import com.eventwisp.app.dto.sessionDto.CreateSessionDto;
+import com.eventwisp.app.dto.sessionDto.SessionCardDto;
 import com.eventwisp.app.dto.sessionDto.SessionDetailsDto;
 import com.eventwisp.app.dto.sessionDto.SessionUpdateDto;
 import com.eventwisp.app.entity.Event;
+import com.eventwisp.app.entity.EventCategory;
 import com.eventwisp.app.entity.Session;
+import com.eventwisp.app.repository.EventCategoryRepository;
 import com.eventwisp.app.repository.EventRepository;
 import com.eventwisp.app.repository.SessionRepository;
 import com.eventwisp.app.service.SessionService;
@@ -24,11 +28,16 @@ public class SessionServiceImpl implements SessionService {
 
     private EventRepository eventRepository;
 
+    private EventCategoryRepository eventCategoryRepository;
+
     //Constructor inject repositories
     @Autowired
-    public SessionServiceImpl(SessionRepository sessionRepository, EventRepository eventRepository) {
+    public SessionServiceImpl(SessionRepository sessionRepository,
+                              EventRepository eventRepository,
+                              EventCategoryRepository eventCategoryRepository) {
         this.sessionRepository = sessionRepository;
         this.eventRepository = eventRepository;
+        this.eventCategoryRepository = eventCategoryRepository;
     }
 
     //create new session
@@ -63,8 +72,28 @@ public class SessionServiceImpl implements SessionService {
 
     //find all existing sessions
     @Override
-    public List<Session> findAllSessions() {
-        return sessionRepository.findAll();
+    public MultipleEntityResponse<SessionCardDto> findAllSessions() {
+
+        MultipleEntityResponse<SessionCardDto> response = new MultipleEntityResponse<>();
+
+        //find sessions list
+        List<Session> sessionList=sessionRepository.findSessionsByDateAddedDesc();
+
+        if(sessionList.isEmpty()){
+            response.setMessage("No sessions found for the date");
+            return response;
+        }
+
+        //add sessions to the dto
+        List<SessionCardDto> sessionDetails=sessionList.stream()
+                .map(this::mapToSessionDto)
+                .toList();
+
+        response.setEntityList(sessionDetails);
+        response.setRemarks("Latest sessions for : "+sessionList.size());
+        response.setMessage("Sessions arranged by descending order");
+
+        return response;
     }
 
     //Find all sessions relevant to an event
@@ -152,5 +181,99 @@ public class SessionServiceImpl implements SessionService {
         sessionRepository.deleteById(id);
 
         return true;
+    }
+
+    @Override
+    public MultipleEntityResponse<SessionCardDto> findUpcomingSessions(String categoryName) {
+
+        MultipleEntityResponse<SessionCardDto> response = new MultipleEntityResponse<>();
+
+        //check if the categoryExists
+        boolean categoryExists = eventCategoryRepository.existsByCategory(categoryName);
+
+        if (!categoryExists) {
+            response.setMessage("Category not found: " + categoryName);
+            return response;
+        }
+
+        //find category details
+        EventCategory existingCategory=eventCategoryRepository.findByCategory(categoryName);
+
+        //fetch sessions
+        List<Session> sessionList=sessionRepository.findUpcomingSessionsByEventCategory(categoryName);
+
+        //check if the sessions were found
+        if(sessionList.isEmpty()){
+            response.setMessage("No sessions found for the category: " + categoryName);
+            response.setRemarks(existingCategory.getCategory());
+            return response;
+        }
+
+        //Convert session entities to sessionCardDto object using the helper method
+        List<SessionCardDto> sessionDetails=sessionList.stream()
+                .map(this::mapToSessionDto)
+                .toList();
+
+        response.setEntityList(sessionDetails);
+        response.setRemarks(existingCategory.getCategory());
+        response.setMessage("Sessions List for : "+categoryName);
+
+        return response;
+    }
+
+    //find the sessions list descending ordered by date added
+    @Override
+    public MultipleEntityResponse<SessionCardDto> findLatestSessions() {
+
+        MultipleEntityResponse<SessionCardDto> response = new MultipleEntityResponse<>();
+
+        //find sessions list
+        List<Session> sessionList=sessionRepository.findSessionsByDateAddedDesc();
+
+        if(sessionList.isEmpty()){
+            response.setMessage("No sessions found for the date");
+            return response;
+        }
+
+        //add sessions to the dto
+        List<SessionCardDto> sessionDetails=sessionList.stream()
+                .limit(8)//limit the maximum elements of the list to be 8
+                .map(this::mapToSessionDto)
+                .toList();
+
+        response.setEntityList(sessionDetails);
+        response.setRemarks("Latest sessions for : "+sessionDetails.size());
+        response.setMessage("Sessions arranged by descending order");
+
+        return response;
+    }
+
+
+    //create a helper method to convert sessions-> session details dto
+    private SessionCardDto mapToSessionDto(Session session) {
+        SessionCardDto dto = new SessionCardDto();
+
+        dto.setId(session.getId());
+        dto.setEventName(session.getEvent().getEventName());
+        dto.setEventId(session.getEvent().getId());
+        dto.setStartingDate(session.getDate());
+        dto.setEventAddedDate(session.getEvent().getDateAdded());
+        dto.setStartingTime(session.getStartTime());
+        dto.setCoverImageLink(session.getEvent().getCoverImageLink());
+        dto.setLocation(session.getVenue());
+        dto.setCategoryName(session.getEvent().getEventCategory().getCategory());
+
+        // Calculate minimum ticket price
+        if (session.getEvent().getTickets() != null && !session.getEvent().getTickets().isEmpty()) {
+            Double minPrice = session.getEvent().getTickets().stream()
+                    .mapToDouble(ticket -> ticket.getPrice())
+                    .min()
+                    .orElse(0.0);
+            dto.setMinTicketPrice(minPrice);
+        } else {
+            dto.setMinTicketPrice(0.0);
+        }
+
+        return dto;
     }
 }

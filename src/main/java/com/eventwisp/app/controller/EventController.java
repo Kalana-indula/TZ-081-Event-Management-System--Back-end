@@ -181,11 +181,6 @@ public class EventController {
         try {
             MultipleEntityResponse<EventDetailsDto> response = eventService.findUpCommingEventsByCategory(categoryName);
 
-            // Check if any events were found for this category
-            if (response.getEntityList().isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-            }
-
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error retrieving events: " + e.getMessage());

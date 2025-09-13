@@ -25,7 +25,8 @@ public interface EventRepository extends JpaRepository<Event,Long> {
     @Query("SELECT e FROM Event e WHERE e.organizer.id = :organizerId AND e.eventStatus.id = :statusId")
     List<Event> findOrganizerEventsByStatus(Long organizerId, Integer statusId);
 
-    //find up comming events
+    //find up coming events
     @Query("SELECT e FROM Event e WHERE e.eventCategory.category = :categoryName AND e.isPublished = true AND e.isApproved = true AND e.startingDate > CURRENT_DATE ORDER BY e.startingDate ASC")
-    List<Event> findUpCommingEventsByCategory(@Param("categoryName") String categoryName);
+    List<Event> findUpComingEventsByCategory(@Param("categoryName") String categoryName);
+
 }
