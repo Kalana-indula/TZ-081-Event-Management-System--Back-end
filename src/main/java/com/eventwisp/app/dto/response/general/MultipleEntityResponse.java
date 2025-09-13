@@ -10,5 +10,6 @@ import java.util.List;
 @Getter
 public class MultipleEntityResponse<T> {
     private String message;
+    private String remarks="";
     private List<T> entityList = new ArrayList<>();
 }

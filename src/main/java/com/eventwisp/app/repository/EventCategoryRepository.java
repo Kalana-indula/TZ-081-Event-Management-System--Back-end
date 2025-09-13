@@ -9,4 +9,7 @@ public interface EventCategoryRepository extends JpaRepository<EventCategory,Lon
 
     //check if category exists
     boolean existsByCategory(String categoryName);
+
+    //find category by category name
+    EventCategory findByCategory(String categoryName);
 }

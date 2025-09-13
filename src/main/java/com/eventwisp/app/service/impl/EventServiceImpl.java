@@ -396,12 +396,17 @@ public class EventServiceImpl implements EventService {
             return response;
         }
 
+        //find category details
+        EventCategory existingCategory=eventCategoryRepository.findByCategory(categoryName);
+
+
         // Fetch events
-        List<Event> eventsList = eventRepository.findUpCommingEventsByCategory(categoryName);
+        List<Event> eventsList = eventRepository.findUpComingEventsByCategory(categoryName);
 
         // Check if events were found
         if (eventsList.isEmpty()) {
             response.setMessage("No events found for category: " + categoryName);
+            response.setRemarks(existingCategory.getCategory());
             return response;
         }
 
@@ -412,6 +417,7 @@ public class EventServiceImpl implements EventService {
 
         response.setEntityList(eventDetails);
         response.setMessage("Events found for category: " + categoryName);
+        response.setRemarks(existingCategory.getCategory());
 
         return response;
     }

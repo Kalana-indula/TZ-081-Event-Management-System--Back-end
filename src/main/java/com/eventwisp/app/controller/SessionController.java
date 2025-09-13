@@ -1,16 +1,16 @@
 package com.eventwisp.app.controller;
 
-import com.eventwisp.app.dto.sessionDto.CreateSessionDto;
-import com.eventwisp.app.dto.sessionDto.SessionUpdateDto;
 import com.eventwisp.app.dto.response.FindSessionByEventResponse;
+import com.eventwisp.app.dto.response.general.MultipleEntityResponse;
+import com.eventwisp.app.dto.sessionDto.CreateSessionDto;
+import com.eventwisp.app.dto.sessionDto.SessionCardDto;
+import com.eventwisp.app.dto.sessionDto.SessionUpdateDto;
 import com.eventwisp.app.entity.Session;
 import com.eventwisp.app.service.SessionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -45,15 +45,11 @@ public class SessionController {
     @GetMapping("/sessions")
     public ResponseEntity<?> findAllSessions(){
         try {
-            List<Session> sessionList=sessionService.findAllSessions();
+            MultipleEntityResponse<SessionCardDto> response = sessionService.findAllSessions();
 
-            if(sessionList.isEmpty()){
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No sessions found");
-            }
-
-            return ResponseEntity.status(HttpStatus.OK).body(sessionList);
-        }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error retrieving sessions: " + e.getMessage());
         }
     }
 
@@ -67,6 +63,30 @@ public class SessionController {
             return ResponseEntity.status(HttpStatus.OK).body(response);
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    //find upcoming event sessions
+    @GetMapping("/events/categories/{categoryName}/sessions")
+    public ResponseEntity<?> findUpcomingSessionsByCategory(@PathVariable String categoryName){
+        try {
+            MultipleEntityResponse<SessionCardDto> response = sessionService.findUpcomingSessions(categoryName);
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error retrieving sessions: " + e.getMessage());
+        }
+    }
+
+    //find latest upcoming sessions
+    @GetMapping("/events/sessions/latest")
+    public ResponseEntity<?> findLatestSessions() {
+        try {
+            MultipleEntityResponse<SessionCardDto> response = sessionService.findLatestSessions();
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error retrieving latest sessions: " + e.getMessage());
         }
     }
 

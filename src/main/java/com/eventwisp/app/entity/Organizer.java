@@ -65,6 +65,7 @@ public class Organizer {
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL,mappedBy = "organizer")
     private List<Event> eventsList;
 
+    @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL,mappedBy = "organizer")
     private List<Transaction> transactionsList;
 }
