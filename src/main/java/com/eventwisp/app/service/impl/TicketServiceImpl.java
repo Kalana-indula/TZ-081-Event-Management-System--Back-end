@@ -61,6 +61,7 @@ public class TicketServiceImpl implements TicketService {
             dto.setTicketPrice(ticket.getPrice());
             dto.setTicketCount(ticket.getTicketCount());
             dto.setSoldCount(ticket.getSoldCount());
+
             dtos.add(dto);
         }
 
@@ -75,79 +76,81 @@ public class TicketServiceImpl implements TicketService {
     @Override
     public List<TicketUpdateResponse> updateTicket(List<TicketUpdateDto> ticketData) {
         //Check if passed data is null
-        if (ticketData == null) {
-            throw new IllegalArgumentException("Ticket data list cannot be null");
-        }
-        //Updated ticket list
-        List<Ticket> updatedTicketList = new ArrayList<>();
+//        if (ticketData == null) {
+//            throw new IllegalArgumentException("Ticket data list cannot be null");
+//        }
+//        //Updated ticket list
+//        List<Ticket> updatedTicketList = new ArrayList<>();
+//
+//        //Create a response objects list
+//        List<TicketUpdateResponse> responseList = new ArrayList<>();
+//
+//        //Iterate through the details of tickets
+//        for (TicketUpdateDto newTicketDetails : ticketData) {
+//            //Create a single update response
+//            TicketUpdateResponse response = new TicketUpdateResponse();
+//
+//            //Set ticket id
+//            response.setId(newTicketDetails.getId());
+//
+//            try {
+//                //Find each ticket type by id
+//                Ticket existingTicket = ticketRepository.findById(newTicketDetails.getId()).orElseThrow(
+//                        () -> new RuntimeException("Ticket not found with Id " + newTicketDetails.getId()));
+//
+//
+//                //Get current details
+//                String currentTicketType = existingTicket.getTicketType();
+//                double currentTicketPrice = existingTicket.getPrice();
+//                int currentTicketCount = existingTicket.getTicketCount();
+//
+//                //Check if the newTicketDetails has a ticketType
+//                if (newTicketDetails.getTicketType() == null) {
+//                    existingTicket.setTicketType(currentTicketType);
+//                } else {
+//                    existingTicket.setTicketType(newTicketDetails.getTicketType());
+//                }
+//
+//                //Check if the newTicketDetails has a price
+//                if (newTicketDetails.getPrice() == null) {
+//                    existingTicket.setPrice(currentTicketPrice);
+//                } else {
+//                    existingTicket.setPrice(newTicketDetails.getPrice());
+//                }
+//
+//                //Check if the newTicketDetails has a ticketCount
+//                if (newTicketDetails.getTicketCount() == null) {
+//                    existingTicket.setTicketCount(currentTicketCount);
+//                } else {
+//                    existingTicket.setTicketCount(newTicketDetails.getTicketCount());
+//                }
+//
+//                updatedTicketList.add(existingTicket);
+//                response.setSuccess(true);
+//            }catch (Exception e){
+//                response.setSuccess(false);
+//                response.setMessage(e.getMessage());
+//            }
+//            //Add new response to the response list
+//            responseList.add(response);
+//
+//        }
+//        //Batch save all the tickets
+//        List<Ticket> updatedTickets=ticketRepository.saveAll(updatedTicketList);
+//
+//        //Update responses with the saved tickets
+//        for (TicketUpdateResponse updateResponse:responseList){
+//            if(updateResponse.isSuccess()){
+//                Ticket updatedTicket=updatedTickets.stream()
+//                        .filter(t->t.getId().equals(updateResponse.getId()))
+//                        .findFirst()
+//                        .orElse(null);
+//                updateResponse.setTicket(updatedTicket);
+//            }
+//        }
+//        return responseList;
 
-        //Create a response objects list
-        List<TicketUpdateResponse> responseList = new ArrayList<>();
-
-        //Iterate through the details of tickets
-        for (TicketUpdateDto newTicketDetails : ticketData) {
-            //Create a single update response
-            TicketUpdateResponse response = new TicketUpdateResponse();
-
-            //Set ticket id
-            response.setId(newTicketDetails.getId());
-
-            try {
-                //Find each ticket type by id
-                Ticket existingTicket = ticketRepository.findById(newTicketDetails.getId()).orElseThrow(
-                        () -> new RuntimeException("Ticket not found with Id " + newTicketDetails.getId()));
-
-
-                //Get current details
-                String currentTicketType = existingTicket.getTicketType();
-                double currentTicketPrice = existingTicket.getPrice();
-                int currentTicketCount = existingTicket.getTicketCount();
-
-                //Check if the newTicketDetails has a ticketType
-                if (newTicketDetails.getTicketType() == null) {
-                    existingTicket.setTicketType(currentTicketType);
-                } else {
-                    existingTicket.setTicketType(newTicketDetails.getTicketType());
-                }
-
-                //Check if the newTicketDetails has a price
-                if (newTicketDetails.getPrice() == null) {
-                    existingTicket.setPrice(currentTicketPrice);
-                } else {
-                    existingTicket.setPrice(newTicketDetails.getPrice());
-                }
-
-                //Check if the newTicketDetails has a ticketCount
-                if (newTicketDetails.getTicketCount() == null) {
-                    existingTicket.setTicketCount(currentTicketCount);
-                } else {
-                    existingTicket.setTicketCount(newTicketDetails.getTicketCount());
-                }
-
-                updatedTicketList.add(existingTicket);
-                response.setSuccess(true);
-            }catch (Exception e){
-                response.setSuccess(false);
-                response.setMessage(e.getMessage());
-            }
-            //Add new response to the response list
-            responseList.add(response);
-
-        }
-        //Batch save all the tickets
-        List<Ticket> updatedTickets=ticketRepository.saveAll(updatedTicketList);
-
-        //Update responses with the saved tickets
-        for (TicketUpdateResponse updateResponse:responseList){
-            if(updateResponse.isSuccess()){
-                Ticket updatedTicket=updatedTickets.stream()
-                        .filter(t->t.getId().equals(updateResponse.getId()))
-                        .findFirst()
-                        .orElse(null);
-                updateResponse.setTicket(updatedTicket);
-            }
-        }
-        return responseList;
+        return null;
     }
 
     //Update ticket type
@@ -156,17 +159,19 @@ public class TicketServiceImpl implements TicketService {
     public Ticket updateTicketType(Long id, TicketTypeUpdateDto ticketTypeUpdateDto) {
 
         //Check if the ticket exists
-        Ticket ticketType=ticketRepository.findById(id).orElse(null);
+//        Ticket ticketType=ticketRepository.findById(id).orElse(null);
+//
+//        if(ticketType==null){
+//            return null;
+//        }
+//
+//        ticketType.setTicketType(ticketTypeUpdateDto.getTicketType());
+//        ticketType.setTicketCount(ticketTypeUpdateDto.getTicketCount());
+//        ticketType.setPrice(ticketTypeUpdateDto.getPrice());
 
-        if(ticketType==null){
-            return null;
-        }
+//        return ticketRepository.save(ticketType);
 
-        ticketType.setTicketType(ticketTypeUpdateDto.getTicketType());
-        ticketType.setTicketCount(ticketTypeUpdateDto.getTicketCount());
-        ticketType.setPrice(ticketTypeUpdateDto.getPrice());
-
-        return ticketRepository.save(ticketType);
+        return null;
     }
 
     @Override

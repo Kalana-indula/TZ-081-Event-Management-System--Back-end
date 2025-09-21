@@ -28,6 +28,7 @@ public class BookingServiceImpl implements BookingService {
     private SessionRepository sessionRepository;
     private BookingSequenceRepository bookingSequenceRepository;
     private OrganizerRepository organizerRepository;
+    private SessionTicketRepository sessionTicketRepository;
 
     //Inject repositories
     @Autowired
@@ -36,13 +37,15 @@ public class BookingServiceImpl implements BookingService {
                               TicketRepository ticketRepository,
                               SessionRepository sessionRepository,
                               BookingSequenceRepository bookingSequenceRepository,
-                              OrganizerRepository organizerRepository) {
+                              OrganizerRepository organizerRepository,
+                              SessionTicketRepository sessionTicketRepository) {
         this.bookingRepository = bookingRepository;
         this.eventRepository = eventRepository;
         this.ticketRepository = ticketRepository;
         this.sessionRepository = sessionRepository;
         this.bookingSequenceRepository = bookingSequenceRepository;
         this.organizerRepository = organizerRepository;
+        this.sessionTicketRepository = sessionTicketRepository;
     }
 
     @Override
@@ -91,6 +94,9 @@ public class BookingServiceImpl implements BookingService {
         //Create a list to store tickets
         List<Ticket> bookedTickets = new ArrayList<>();
 
+        //get ticket details for the session
+        List<SessionTicket> sessionTicketDetails=sessionTicketRepository.findSessionTicketsBySessionId(bookingDto.getSessionId());
+
         //ticket price
         double totalPrice = 0.0;
         int attendance = 0;
@@ -99,29 +105,15 @@ public class BookingServiceImpl implements BookingService {
         for (Long ticketId : bookingDto.getTicketIdList()) {
             Ticket ticket = ticketRepository.findById(ticketId).orElse(null);
 
-            //check if the ticket is null
-            if (ticket != null) {
+            if(ticket!=null){
+                //update session ticket details
+                updateSessionTicketDetails(ticketId,sessionTicketDetails);
 
-                //get currently available tickets count
-                int count = ticket.getTicketCount();
-                int soldCount = ticket.getSoldCount();
-
-                //check if all the tickets are sold out
-                if (count >= 0) {
-                    bookedTickets.add(ticket);
-
-                    //update ticket counts
-                    ticket.setTicketCount(count - 1);
-                    ticket.setSoldCount(soldCount + 1);
-                    totalPrice += ticket.getPrice();
-
-                    //update the ticket details in database
-                    ticketRepository.save(ticket);
-
-                    //update the attendees count
-                    attendance += 1;
-                }
+                attendance += 1;
+                bookedTickets.add(ticket);
+                totalPrice += ticket.getPrice();
             }
+
         }
 
         //calculate the profit from the booking
@@ -179,7 +171,6 @@ public class BookingServiceImpl implements BookingService {
         bookingDetails.setEmail(newBooking.getEmail());
         bookingDetails.setPhone(newBooking.getPhone());
         bookingDetails.setNic(newBooking.getIdNumber());
-
 
         response.setMessage("Booking successful");
         response.setBookingDetails(bookingDetails);
@@ -282,6 +273,17 @@ public class BookingServiceImpl implements BookingService {
             tracker.setSequence(sequence);
             bookingSequenceRepository.save(tracker);
             return datePrefix + "-" + String.format("%03d", sequence);
+        }
+    }
+
+    //update session ticket details
+    private void updateSessionTicketDetails(Long ticketId, List<SessionTicket> sessionTicketDetails){
+        for(SessionTicket sessionTicket : sessionTicketDetails){
+            if(ticketId.equals(sessionTicket.getTicketId())){
+                sessionTicket.setRemainingTicketCount(sessionTicket.getRemainingTicketCount()-1);
+                sessionTicket.setSoldTicketCount(sessionTicket.getSoldTicketCount()+1);
+                sessionTicketRepository.save(sessionTicket);
+            }
         }
     }
 

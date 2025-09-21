@@ -21,16 +21,19 @@ public interface SessionRepository extends JpaRepository<Session, Long> {
         WHERE s.event.eventCategory.category = :categoryName 
         AND s.event.isPublished = true 
         AND s.event.isApproved = true 
-        AND s.event.startingDate > CURRENT_DATE
+        AND s.event.isCompleted=false
         ORDER BY s.event.startingDate ASC, s.date ASC, s.startTime ASC
     """)
     List<Session> findUpcomingSessionsByEventCategory(@Param("categoryName") String categoryName);
+
+//     AND s.event.startingDate > CURRENT_DATE
 
     //find sessions by descending order of added
     @Query("""
     SELECT s FROM Session s 
     WHERE s.event.isPublished = true 
     AND s.event.isApproved = true 
+    AND s.event.isCompleted=false
     ORDER BY s.event.dateAdded DESC
 """)
     List<Session> findSessionsByDateAddedDesc();

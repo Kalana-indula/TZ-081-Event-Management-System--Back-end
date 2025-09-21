@@ -2,8 +2,10 @@ package com.eventwisp.app.controller;
 
 import com.eventwisp.app.dto.response.FindSessionByEventResponse;
 import com.eventwisp.app.dto.response.general.MultipleEntityResponse;
+import com.eventwisp.app.dto.response.general.SingleEntityResponse;
 import com.eventwisp.app.dto.sessionDto.CreateSessionDto;
 import com.eventwisp.app.dto.sessionDto.SessionCardDto;
+import com.eventwisp.app.dto.sessionDto.SessionDetailsDto;
 import com.eventwisp.app.dto.sessionDto.SessionUpdateDto;
 import com.eventwisp.app.entity.Session;
 import com.eventwisp.app.service.SessionService;
@@ -62,6 +64,18 @@ public class SessionController {
 
             return ResponseEntity.status(HttpStatus.OK).body(response);
         }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    //find session details by id
+    @GetMapping("/sessions/{sessionId}")
+    public ResponseEntity<?> findSessionDetailsById(@PathVariable Long sessionId) {
+        try {
+            SingleEntityResponse<SessionDetailsDto> response = sessionService.findSessionDetailsBySessionId(sessionId);
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
