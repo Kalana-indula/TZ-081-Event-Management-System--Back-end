@@ -10,7 +10,7 @@ import java.time.LocalTime;
 @Setter
 @Getter
 public class SessionCardDto {
-    private Long id;
+    private Long sessionId;
     private String eventName;
     private Long eventId;
     private LocalDate startingDate;

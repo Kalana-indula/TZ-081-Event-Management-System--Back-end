@@ -57,4 +57,9 @@ public class Session {
     @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL,mappedBy = "session")
     private List<Booking> bookings;
+
+    //map an independent
+    @JsonIgnore
+    @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL,mappedBy = "session")
+    private List<SessionTicket> sessionTicketDetails;
 }
