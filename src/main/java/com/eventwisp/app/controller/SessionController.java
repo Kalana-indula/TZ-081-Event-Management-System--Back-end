@@ -92,6 +92,18 @@ public class SessionController {
         }
     }
 
+    //find sessions by event name
+    @GetMapping("/events/name/{eventName}/sessions")
+    public ResponseEntity<?> findSessionsByEventName(@PathVariable String eventName){
+        try {
+            MultipleEntityResponse<SessionCardDto> response = sessionService.findSessionsByEventName(eventName);
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
     //find latest upcoming sessions
     @GetMapping("/events/sessions/latest")
     public ResponseEntity<?> findLatestSessions() {

@@ -43,13 +43,13 @@ public class Organizer {
     private String password;
 
     @Column(name = "pending_approval")
-    private Boolean pendingApproval=true;
+    private Boolean pendingApproval = true;
 
     @Column(name = "is_approved")
-    private Boolean isApproved=false;
+    private Boolean isApproved = false;
 
     @Column(name = "is_disapproved")
-    private Boolean isDisapproved=false;
+    private Boolean isDisapproved = false;
 
     @Column(name = "total_earnings")
     private BigDecimal totalEarnings = BigDecimal.ZERO;
@@ -58,14 +58,17 @@ public class Organizer {
     private BigDecimal totalWithdrawals = BigDecimal.ZERO;
 
     @Column(name = "current_balance")
-    private BigDecimal currentBalance= BigDecimal.ZERO;
+    private BigDecimal currentBalance = BigDecimal.ZERO;
 
-    //Events of organizer
     @JsonIgnore
-    @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL,mappedBy = "organizer")
+    @OneToOne(mappedBy = "organizer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Bank bank;
+
+    @JsonIgnore
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "organizer")
     private List<Event> eventsList;
 
     @JsonIgnore
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL,mappedBy = "organizer")
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "organizer")
     private List<Transaction> transactionsList;
 }

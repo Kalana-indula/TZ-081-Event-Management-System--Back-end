@@ -314,6 +314,32 @@ public class SessionServiceImpl implements SessionService {
         return response;
     }
 
+    @Override
+    public MultipleEntityResponse<SessionCardDto> findSessionsByEventName(String eventName) {
+        MultipleEntityResponse<SessionCardDto> response = new MultipleEntityResponse<>();
+
+        //fetch all sessions for an event
+        List<Session> sessionList = sessionRepository.findByEventName(eventName);
+
+        if(sessionList.isEmpty()) {
+            response.setMessage("No sessions found for the given event :"+eventName);
+            response.setRemarks("No of sessions "+0);
+            response.setEntityList(new ArrayList<>());
+            return response;
+        }
+
+        //add details to the dto
+        List<SessionCardDto> sessionDetails = sessionList.stream()
+                .map(this::mapToSessionDto)
+                .toList();
+
+        response.setEntityList(sessionDetails);
+        response.setRemarks("No of sessions : " + sessionDetails.size());
+        response.setMessage("Sessions of event "+eventName);
+
+        return response;
+    }
+
 
     //create a helper method to convert sessions-> session details dto
     private SessionCardDto mapToSessionDto(Session session) {

@@ -6,9 +6,16 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface OrganizerRepository extends JpaRepository<Organizer,Long> {
+
+    //find an organizer by email
+    Optional<Organizer> findByEmail(String email);
+
+    //Check if a user exists by email
+    Boolean existsByEmail(String email);
 
     //find pending approval organizer accounts
     @Query("SELECT o FROM Organizer o WHERE o.pendingApproval = true")

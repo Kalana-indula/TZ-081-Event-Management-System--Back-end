@@ -322,7 +322,6 @@ public class EventServiceImpl implements EventService {
         // Check if organizer exists
         boolean isExist = organizerRepository.existsById(organizerId);
 
-
         if (!isExist) {
             response.setMessage("No organizer found for entered id");
             return response;
@@ -552,6 +551,10 @@ public class EventServiceImpl implements EventService {
             existingEvent.setEventStatus(eventStatusRepository.findById(1L).orElse(null));
         }
 
+        if(eventStatusDto.getIsCompleted()){
+            existingEvent.setDateCompleted(LocalDate.now());
+        }
+
         eventRepository.save(existingEvent);
 
         response.setMessage("Event updated successfully");
@@ -572,6 +575,31 @@ public class EventServiceImpl implements EventService {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public MultipleEntityResponse<Integer> findActiveYearsByOrganizer(Long organizerId) {
+
+        MultipleEntityResponse<Integer> response = new MultipleEntityResponse<>();
+
+        Organizer existingOrganizer = organizerRepository.findById(organizerId).orElse(null);
+
+        if(existingOrganizer == null) {
+            response.setMessage("Organizer not found");
+            return response;
+        }
+
+        List<Integer> yearsList=eventRepository.findEventCompletionYearsByOrganizer(organizerId);
+
+        if(yearsList.isEmpty()){
+            response.setMessage("No events found for organizer " + organizerId);
+            return response;
+        }
+
+        response.setMessage("Years found for organizer " + organizerId);
+        response.setEntityList(yearsList);
+
+        return response;
     }
 
 }
