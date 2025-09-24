@@ -37,4 +37,13 @@ public interface SessionRepository extends JpaRepository<Session, Long> {
     ORDER BY s.event.dateAdded DESC
 """)
     List<Session> findSessionsByDateAddedDesc();
+
+    //find all sessions by event name
+
+    @Query("SELECT s FROM Session s" +
+            " WHERE s.event.eventName = :eventName" +
+            " AND s.event.isPublished = true" +
+            " AND s.event.isApproved = true" +
+            " AND s.event.isCompleted = false")
+    List<Session> findByEventName(@Param("eventName") String eventName);;
 }

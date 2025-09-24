@@ -11,5 +11,4 @@ public class BookingDetailsDto {
     private String email;
     private String phone;
     private String nic;
-
 }

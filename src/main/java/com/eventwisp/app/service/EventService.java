@@ -53,4 +53,7 @@ public interface EventService {
     UpdateResponse<Event> updateEventStatus(Long id, EventStatusDto eventStatusDto);
 
     Boolean deleteEvent(Long id);
+
+    //get the list of years organizer's been active
+    MultipleEntityResponse<Integer> findActiveYearsByOrganizer(Long organizerId);
 }

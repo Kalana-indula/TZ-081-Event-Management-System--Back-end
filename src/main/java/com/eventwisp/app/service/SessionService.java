@@ -34,4 +34,7 @@ public interface SessionService {
 
     //get session details by id
     SingleEntityResponse<SessionDetailsDto> findSessionDetailsBySessionId(Long sessionId);
+
+    //find session by event name
+    MultipleEntityResponse<SessionCardDto> findSessionsByEventName(String eventName);
 }

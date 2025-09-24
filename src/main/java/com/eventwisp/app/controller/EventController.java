@@ -204,6 +204,17 @@ public class EventController {
         }
     }
 
+    //find years of organized events
+    @GetMapping("/events/completed/years/organizers/{organizerId}")
+    public ResponseEntity<?> findActiveYearsByOrganizer(@PathVariable Long organizerId) {
+        try {
+            MultipleEntityResponse<Integer> response = eventService.findActiveYearsByOrganizer(organizerId);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error retrieving active years: " + e.getMessage());
+        }
+    }
+
     //publish event
     @PutMapping("/events/{eventId}/publish")
     public ResponseEntity<?> setEventAsPublic(@PathVariable Long eventId) {

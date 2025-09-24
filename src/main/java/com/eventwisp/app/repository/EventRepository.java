@@ -29,4 +29,8 @@ public interface EventRepository extends JpaRepository<Event,Long> {
     @Query("SELECT e FROM Event e WHERE e.eventCategory.category = :categoryName AND e.isPublished = true AND e.isApproved = true AND e.startingDate > CURRENT_DATE ORDER BY e.startingDate ASC")
     List<Event> findUpComingEventsByCategory(@Param("categoryName") String categoryName);
 
+    //find event completion years
+    @Query("SELECT DISTINCT YEAR(e.dateCompleted) FROM Event e WHERE e.organizer.id = :organizerId AND e.isCompleted = true")
+    List<Integer> findEventCompletionYearsByOrganizer(@Param("organizerId") Long organizerId);
 }
+
