@@ -267,6 +267,8 @@ public class SessionServiceImpl implements SessionService {
 
         if (sessionList.isEmpty()) {
             response.setMessage("No sessions found for the date");
+            response.setRemarks("");
+            response.setEntityList(new ArrayList<>());
             return response;
         }
 

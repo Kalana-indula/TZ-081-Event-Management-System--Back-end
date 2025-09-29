@@ -65,6 +65,10 @@ public class Organizer {
     private Bank bank;
 
     @JsonIgnore
+    @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL,mappedBy = "organizer")
+    private List<MonthlyEarning> monthlyEarnings;
+
+    @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "organizer")
     private List<Event> eventsList;
 

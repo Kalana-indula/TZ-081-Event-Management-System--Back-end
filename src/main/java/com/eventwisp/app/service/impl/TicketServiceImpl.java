@@ -5,7 +5,9 @@ import com.eventwisp.app.dto.TicketUpdateDto;
 import com.eventwisp.app.dto.response.TicketUpdateResponse;
 import com.eventwisp.app.dto.response.general.MultipleEntityResponse;
 import com.eventwisp.app.dto.ticket.TicketDetailsDto;
+import com.eventwisp.app.entity.Event;
 import com.eventwisp.app.entity.Ticket;
+import com.eventwisp.app.repository.EventRepository;
 import com.eventwisp.app.repository.TicketRepository;
 import com.eventwisp.app.service.TicketService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +23,13 @@ public class TicketServiceImpl implements TicketService {
     //create an instance of 'TicketRepository'
     private TicketRepository ticketRepository;
 
+    private EventRepository eventRepository;
+
     @Autowired
-    public TicketServiceImpl(TicketRepository ticketRepository) {
+    public TicketServiceImpl(TicketRepository ticketRepository,
+                             EventRepository eventRepository) {
         this.ticketRepository = ticketRepository;
+        this.eventRepository = eventRepository;
     }
 
     @Override
@@ -42,6 +48,9 @@ public class TicketServiceImpl implements TicketService {
     public MultipleEntityResponse<TicketDetailsDto> findTicketsByEvent(Long id) {
 
         MultipleEntityResponse<TicketDetailsDto> response = new MultipleEntityResponse<>();
+
+        //find event name
+        Event existingEvent=eventRepository.findById(id).orElse(null);
 
         //find tickets list
         List<Ticket> tickets = ticketRepository.findTicketsByEvent(id);
@@ -66,7 +75,8 @@ public class TicketServiceImpl implements TicketService {
         }
 
         response.setEntityList(dtos);
-        response.setMessage("Tickets retrieved successfully for event ID: " + id);
+        response.setMessage("Tickets retrieved successfully for event ID: " + existingEvent.getEventName());
+        response.setRemarks("Tickets retrieved successfully for event ID: " + id);
 
         return response;
     }

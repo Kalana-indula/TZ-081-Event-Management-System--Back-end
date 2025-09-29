@@ -37,19 +37,23 @@ public class EventServiceImpl implements EventService {
 
     private FinancialDataRepository financialDataRepository;
 
+    private MonthlyEarningRepository monthlyEarningRepository;
+
     @Autowired
     public EventServiceImpl(EventRepository eventRepository,
                             EventCategoryRepository eventCategoryRepository,
                             TicketRepository ticketRepository,
                             OrganizerRepository organizerRepository,
                             EventStatusRepository eventStatusRepository,
-                            FinancialDataRepository financialDataRepository) {
+                            FinancialDataRepository financialDataRepository,
+                            MonthlyEarningRepository monthlyEarningRepository) {
         this.eventRepository = eventRepository;
         this.eventCategoryRepository = eventCategoryRepository;
         this.ticketRepository = ticketRepository;
         this.organizerRepository = organizerRepository;
         this.eventStatusRepository = eventStatusRepository;
         this.financialDataRepository = financialDataRepository;
+        this.monthlyEarningRepository = monthlyEarningRepository;
     }
 
     //Create a new event
@@ -302,6 +306,8 @@ public class EventServiceImpl implements EventService {
             eventDetails.setEventType(event.getEventCategory().getCategory());
             eventDetails.setOrganizer(event.getOrganizer().getFirstName() + " " + event.getOrganizer().getLastName());
             eventDetails.setDateAdded(event.getDateAdded());
+            eventDetails.setDateCompleted(event.getDateCompleted());
+            eventDetails.setStartingDate(event.getStartingDate());
             eventDetails.setStatus(event.getEventStatus().getStatusName());
 
             managerSideEvents.add(eventDetails);
@@ -555,10 +561,78 @@ public class EventServiceImpl implements EventService {
             existingEvent.setDateCompleted(LocalDate.now());
         }
 
-        eventRepository.save(existingEvent);
+        Event savedEvent= eventRepository.save(existingEvent);
+
+        //check if the event is completed
+        if(savedEvent.getIsCompleted()){
+            //fetch completion year as an integer
+            Integer completionYear=savedEvent.getDateCompleted().getYear();
+
+            Long organizerId=savedEvent.getOrganizer().getId();
+
+            //find the list of 'MonthlyEarning' for year and organizer id
+            List<MonthlyEarning> monthlyEarnings=monthlyEarningRepository.findByOrganizerAndYear(organizerId, completionYear);
+
+            //if no record create one
+            if (monthlyEarnings == null || monthlyEarnings.isEmpty()) {
+                MonthlyEarning monthlyEarning = new MonthlyEarning();
+
+                monthlyEarning.setOrganizer(savedEvent.getOrganizer());
+                monthlyEarning.setYear(completionYear);
+
+                //derive month number
+                int monthNumber = savedEvent.getDateCompleted().getMonthValue();
+
+                //derive month name
+                String monthName = savedEvent.getDateCompleted().getMonth()
+                        .name()
+                        .substring(0, 3)   // take first 3 letters (e.g., JAN → JAN)
+                        .charAt(0) + savedEvent.getDateCompleted().getMonth()
+                        .name()
+                        .substring(1, 3).toLowerCase(); // format to Jan
+
+                monthlyEarning.setMonthNumber(monthNumber);
+                monthlyEarning.setMonthName(monthName);
+                monthlyEarning.setTotalEarnings(savedEvent.getEarningsByEvent());
+
+                monthlyEarningRepository.save(monthlyEarning);
+            }
+
+            //if there is a record list check if there is a record for the corresponding completion month
+            if (monthlyEarnings != null && !monthlyEarnings.isEmpty()) {
+                int monthNumber = savedEvent.getDateCompleted().getMonthValue();
+                String monthName = savedEvent.getDateCompleted().getMonth()
+                        .getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.ENGLISH);
+
+                // try to find an existing monthly record
+                MonthlyEarning existingRecord = monthlyEarnings.stream()
+                        .filter(m -> m.getMonthNumber().equals(monthNumber))
+                        .findFirst()
+                        .orElse(null);
+
+                if (existingRecord != null) {
+                    // update total earnings
+                    existingRecord.setTotalEarnings(
+                            existingRecord.getTotalEarnings().add(savedEvent.getEarningsByEvent())
+                    );
+                    monthlyEarningRepository.save(existingRecord);
+                } else {
+                    // create new record for that month
+                    MonthlyEarning newRecord = new MonthlyEarning();
+                    newRecord.setOrganizer(savedEvent.getOrganizer());
+                    newRecord.setYear(completionYear);
+                    newRecord.setMonthNumber(monthNumber);
+                    newRecord.setMonthName(monthName);
+                    newRecord.setTotalEarnings(savedEvent.getEarningsByEvent());
+
+                    monthlyEarningRepository.save(newRecord);
+                }
+            }
+
+        }
 
         response.setMessage("Event updated successfully");
-        response.setUpdatedData(existingEvent);
+        response.setUpdatedData(savedEvent);
 
         return response;
     }
