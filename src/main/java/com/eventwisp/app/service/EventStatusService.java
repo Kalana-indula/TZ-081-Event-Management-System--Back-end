@@ -13,4 +13,6 @@ public interface EventStatusService {
     List<EventStatus> getAllEventStatus();
 
     EventStatus getEventStatusById(Long statusId);
+
+    EventStatus updateEventStatus(Long statusId, EventStatus eventStatus);
 }

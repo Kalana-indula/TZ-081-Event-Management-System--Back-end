@@ -117,7 +117,7 @@ public class BookingServiceImpl implements BookingService {
         }
 
         //calculate the profit from the booking
-        double profit = totalPrice - totalPrice * currentCommission;
+        double profit = totalPrice - totalPrice * (currentCommission/100);
 
         //set ticket count
         booking.setTicketCount(bookedTickets.size());
@@ -127,7 +127,6 @@ public class BookingServiceImpl implements BookingService {
 
         //set total price
         booking.setTotalPrice(totalPrice);
-
 
         //update event details
         //get current event revenue,profit and attendees count

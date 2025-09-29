@@ -38,4 +38,18 @@ public class EventStatusServiceImpl implements EventStatusService {
 
         return eventStatusRepository.findById(statusId).orElse(null);
     }
+
+    @Override
+    public EventStatus updateEventStatus(Long statusId, EventStatus eventStatus) {
+
+        EventStatus status=eventStatusRepository.findById(statusId).orElse(null);
+
+        if(status==null){
+            EventStatus newStatus=new EventStatus();
+            newStatus.setStatusName(eventStatus.getStatusName());
+            return eventStatusRepository.save(newStatus);
+        }
+        status.setStatusName(eventStatus.getStatusName());
+        return eventStatusRepository.save(status);
+    }
 }

@@ -1,11 +1,13 @@
 package com.eventwisp.app.service.impl;
 
+import com.eventwisp.app.dto.response.general.MultipleEntityResponse;
 import com.eventwisp.app.entity.EventCategory;
 import com.eventwisp.app.repository.EventCategoryRepository;
 import com.eventwisp.app.service.EventCategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -28,8 +30,25 @@ public class EventCategoryServiceImpl implements EventCategoryService {
 
     //Get all categories
     @Override
-    public List<EventCategory> getAllCategories() {
-        return eventCategoryRepository.findAll();
+    public MultipleEntityResponse<EventCategory> getAllCategories() {
+
+        MultipleEntityResponse<EventCategory> response=new MultipleEntityResponse<>();
+
+        List<EventCategory> categories=eventCategoryRepository.findAll();
+
+        if(categories.isEmpty()){
+          response.setMessage("No categories found");
+          response.setRemarks("Category count "+0);
+          response.setEntityList(new ArrayList<>());
+
+          return response;
+        }
+
+        response.setMessage("Categories List");
+        response.setMessage("Category count:"+categories.size());
+        response.setEntityList(categories);
+
+        return response;
     }
 
     //Get a cetegory by id
