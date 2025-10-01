@@ -121,6 +121,18 @@ public class OrganizerController {
         }
     }
 
+    //find earnings by all organizers
+    @GetMapping("/organizers/earnings")
+    public ResponseEntity<?> findEarningsByAllOrganizers(){
+        try{
+            MultipleEntityResponse<EarningDetails> response = organizerService.getEarningsByAllOrganizers();
+            
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
     @GetMapping("/organizers/pending")
     public ResponseEntity<?> findPendingOrganizers() {
         try {

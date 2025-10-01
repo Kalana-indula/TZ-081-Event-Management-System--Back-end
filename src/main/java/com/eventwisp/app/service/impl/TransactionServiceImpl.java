@@ -6,8 +6,11 @@ import com.eventwisp.app.dto.transaction.CreateTransactionRequest;
 import com.eventwisp.app.dto.transaction.TransactionDetails;
 import com.eventwisp.app.entity.Organizer;
 import com.eventwisp.app.entity.Transaction;
+import com.eventwisp.app.entity.TransactionsTracker;
+import com.eventwisp.app.enums.TransactionStatus;
 import com.eventwisp.app.repository.OrganizerRepository;
 import com.eventwisp.app.repository.TransactionRepository;
+import com.eventwisp.app.repository.TransactionTrackerRepository;
 import com.eventwisp.app.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -24,12 +28,15 @@ public class TransactionServiceImpl implements TransactionService {
 
     private TransactionRepository transactionRepository;
     private OrganizerRepository organizerRepository;
+    private TransactionTrackerRepository transactionTrackerRepository;
 
     @Autowired
     public TransactionServiceImpl(TransactionRepository transactionRepository,
-                                  OrganizerRepository organizerRepository) {
+                                  OrganizerRepository organizerRepository,
+                                  TransactionTrackerRepository transactionTrackerRepository) {
         this.transactionRepository = transactionRepository;
         this.organizerRepository = organizerRepository;
+        this.transactionTrackerRepository = transactionTrackerRepository;
     }
 
 
@@ -50,10 +57,13 @@ public class TransactionServiceImpl implements TransactionService {
 
         // Create transaction entity
         Transaction transaction = new Transaction();
+
+        transaction.setTransactionId(generateTransactionId());
         transaction.setAmount(createTransactionRequest.getAmount());
         transaction.setDate(LocalDate.now());
         transaction.setTime(LocalTime.now());
         transaction.setOrganizer(organizer);
+        transaction.setTransactionStatus(TransactionStatus.SUCCESS);
 
         // Save transaction
         Transaction savedTransaction = transactionRepository.save(transaction);
@@ -71,6 +81,7 @@ public class TransactionServiceImpl implements TransactionService {
         details.setOrganizerName(organizer.getFirstName() + " " + organizer.getLastName());
         details.setDate(savedTransaction.getDate());
         details.setTime(savedTransaction.getTime());
+        details.setStatus(savedTransaction.getTransactionStatus().toString());
 
         response.setMessage("Transaction created successfully");
         response.setEntityData(details);
@@ -92,12 +103,16 @@ public class TransactionServiceImpl implements TransactionService {
         List<TransactionDetails> detailsList = new ArrayList<>();
         for (Transaction tx : transactions) {
             TransactionDetails details = new TransactionDetails();
+
             details.setId(tx.getId());
+            details.setTransactionId(tx.getTransactionId());
             details.setAmount(tx.getAmount());
             details.setOrganizerId(tx.getOrganizer().getId());
             details.setOrganizerName(tx.getOrganizer().getFirstName() + " " + tx.getOrganizer().getLastName());
             details.setDate(tx.getDate());
             details.setTime(tx.getTime());
+            details.setStatus(tx.getTransactionStatus().toString());
+
             detailsList.add(details);
         }
 
@@ -121,12 +136,15 @@ public class TransactionServiceImpl implements TransactionService {
 
         Transaction tx = optionalTransaction.get();
         TransactionDetails details = new TransactionDetails();
+
         details.setId(tx.getId());
+        details.setTransactionId(tx.getTransactionId());
         details.setAmount(tx.getAmount());
         details.setOrganizerId(tx.getOrganizer().getId());
         details.setOrganizerName(tx.getOrganizer().getFirstName() + " " + tx.getOrganizer().getLastName());
         details.setDate(tx.getDate());
         details.setTime(tx.getTime());
+        details.setStatus(tx.getTransactionStatus().toString());
 
         response.setMessage("Transaction retrieved successfully");
         response.setEntityData(details);
@@ -148,12 +166,16 @@ public class TransactionServiceImpl implements TransactionService {
         List<TransactionDetails> detailsList = new ArrayList<>();
         for (Transaction tx : transactions) {
             TransactionDetails details = new TransactionDetails();
+
             details.setId(tx.getId());
+            details.setTransactionId(tx.getTransactionId());
             details.setAmount(tx.getAmount());
             details.setOrganizerId(tx.getOrganizer().getId());
             details.setOrganizerName(tx.getOrganizer().getFirstName() + " " + tx.getOrganizer().getLastName());
             details.setDate(tx.getDate());
             details.setTime(tx.getTime());
+            details.setStatus(tx.getTransactionStatus().toString());
+            
             detailsList.add(details);
         }
 
@@ -161,5 +183,27 @@ public class TransactionServiceImpl implements TransactionService {
         response.setEntityList(detailsList);
 
         return response;
+    }
+
+    //generate booking id
+    private String generateTransactionId() {
+        LocalDate today = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        String datePrefix = "TR" + today.format(formatter);
+
+        TransactionsTracker tracker = transactionTrackerRepository.findById(today.toString())
+                .orElseGet(() -> {
+                    TransactionsTracker newTracker=new TransactionsTracker();
+                    newTracker.setDate(today.toString());
+                    newTracker.setSequence(0L);
+                    return transactionTrackerRepository.save(newTracker);
+                });
+
+        synchronized (this) {
+            long sequence = tracker.getSequence() + 1;
+            tracker.setSequence(sequence);
+            transactionTrackerRepository.save(tracker);
+            return datePrefix + "-" + String.format("%03d", sequence);
+        }
     }
 }

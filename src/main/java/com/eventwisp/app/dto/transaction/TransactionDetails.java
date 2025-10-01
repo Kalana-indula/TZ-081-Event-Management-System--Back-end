@@ -12,9 +12,11 @@ import java.time.LocalTime;
 public class TransactionDetails {
 
     private Long id;
+    private String transactionId;
     private BigDecimal amount;
     private Long organizerId;
     private String organizerName;
     private LocalDate date;
     private LocalTime time;
+    private String status;
 }

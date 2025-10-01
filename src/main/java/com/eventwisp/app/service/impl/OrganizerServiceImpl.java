@@ -70,6 +70,8 @@ public class OrganizerServiceImpl implements OrganizerService {
             details.setIsApproved(organizer.getIsApproved());
             details.setIsDisapproved(organizer.getIsDisapproved());
             details.setTotalEarnings(organizer.getTotalEarnings());
+            details.setTotalWithdrawals(organizer.getTotalWithdrawals());
+            details.setCurrentBalance(organizer.getCurrentBalance());
 
             organizersDetails.add(details);
         }
@@ -247,12 +249,47 @@ public class OrganizerServiceImpl implements OrganizerService {
 
         EarningDetails earningDetails=new EarningDetails();
 
+        earningDetails.setOrganizerId(organizer.getId());
+        earningDetails.setOrganizerName(organizer.getFirstName() + " " + organizer.getLastName());
         earningDetails.setTotalEarnings(organizer.getTotalEarnings());
         earningDetails.setCurrentBalance(organizer.getCurrentBalance());
         earningDetails.setTotalWithdrawals(organizer.getTotalWithdrawals());
 
         response.setMessage("Earning details of organizer : "+organizer.getFirstName()+" "+organizer.getLastName());
         response.setEntityData(earningDetails);
+
+        return response;
+    }
+
+    //get earnings by all organizers
+    @Override
+    public MultipleEntityResponse<EarningDetails> getEarningsByAllOrganizers() {
+        MultipleEntityResponse<EarningDetails> response = new MultipleEntityResponse<>();
+
+        List<Organizer> organizers = organizerRepository.findAll();
+
+        if (organizers.isEmpty()) {
+            response.setMessage("No organizers found");
+            response.setRemarks("Count : 0");
+            return response;
+        }
+
+        List<EarningDetails> detailsList = organizers.stream()
+                .map(o -> {
+                    EarningDetails d = new EarningDetails();
+                    d.setOrganizerId(o.getId());
+                    d.setOrganizerName(o.getFirstName() + " " + o.getLastName());
+                    d.setTotalEarnings(o.getTotalEarnings());
+                    d.setTotalWithdrawals(o.getTotalWithdrawals());
+                    d.setCurrentBalance(o.getCurrentBalance());
+
+                    return d;
+                })
+                .toList();
+
+        response.setEntityList(detailsList);
+        response.setMessage("Organizers earnings list");
+        response.setRemarks("Count : " + detailsList.size());
 
         return response;
     }

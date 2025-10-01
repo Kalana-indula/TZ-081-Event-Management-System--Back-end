@@ -36,6 +36,9 @@ public interface OrganizerService {
     //get earnings by organizer
     SingleEntityResponse<EarningDetails> getEarningsByOrganizer(Long organizerId);
 
+    //get earnings by all organizers
+    MultipleEntityResponse<EarningDetails> getEarningsByAllOrganizers();
+
     Organizer updateOrganizer(Long id, OrganizerUpdateDto organizerUpdateDto);
 
     UpdateResponse<OrganizerDetailsDto> updateOrganizerStatus(Long id, OrganizerStatusDto organizerStatusDto);

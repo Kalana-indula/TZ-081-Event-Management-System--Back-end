@@ -9,7 +9,9 @@ import java.math.BigDecimal;
 @Getter
 public class EarningDetails {
 
-    BigDecimal totalEarnings;
-    BigDecimal totalWithdrawals;
-    BigDecimal currentBalance;
+    private Long organizerId;
+    private String organizerName;
+    private BigDecimal totalEarnings;
+    private BigDecimal totalWithdrawals;
+    private BigDecimal currentBalance;
 }
