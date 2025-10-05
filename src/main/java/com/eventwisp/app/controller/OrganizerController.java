@@ -1,6 +1,7 @@
 package com.eventwisp.app.controller;
 
 import com.eventwisp.app.dto.OrganizerUpdateDto;
+import com.eventwisp.app.dto.organizer.CreateOrganizerDto;
 import com.eventwisp.app.dto.organizer.EarningDetails;
 import com.eventwisp.app.dto.organizer.OrganizerDetailsDto;
 import com.eventwisp.app.dto.organizer.OrganizerStatusDto;
@@ -31,9 +32,9 @@ public class OrganizerController {
     }
 
     @PostMapping("/organizers")
-    public ResponseEntity<?> addOrganizer(@RequestBody Organizer organizer){
+    public ResponseEntity<?> addOrganizer(@RequestBody CreateOrganizerDto createOrganizerDto){
         try {
-            Organizer newOrganizer=organizerService.addOrganizer(organizer);
+            Organizer newOrganizer=organizerService.addOrganizer(createOrganizerDto);
             return ResponseEntity.status(HttpStatus.OK).body(newOrganizer);
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
@@ -105,11 +106,39 @@ public class OrganizerController {
         }
     }
 
+    //find organizer by organizer id
+    @GetMapping("/organizers/id/{organizerId}")
+    public ResponseEntity<?> findOrganizerByOrganizerId(@PathVariable String organizerId) {
+        try {
+            SingleEntityResponse<OrganizerDetailsDto> response = organizerService.getOrganizerDetailsByOrganizerId(organizerId);
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
     //find earning details by organizer
     @GetMapping("/organizers/{organizerId}/earnings")
     ResponseEntity<?> findEarningDetailsByOrganizer(@PathVariable Long organizerId){
         try{
             SingleEntityResponse<EarningDetails> response=organizerService.getEarningsByOrganizer(organizerId);
+
+            if(response.getEntityData()==null){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response.getMessage());
+            }
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    //find earning details by generated organizer id
+    @GetMapping("/organizers/id/{organizerId}/earnings")
+    ResponseEntity<?> findEarningDetailsByOrganizerId(@PathVariable String organizerId){
+        try{
+            SingleEntityResponse<EarningDetails> response=organizerService.getEarningsByOrganizerId(organizerId);
 
             if(response.getEntityData()==null){
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response.getMessage());

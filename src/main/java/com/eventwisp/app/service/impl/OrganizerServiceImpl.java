@@ -1,6 +1,7 @@
 package com.eventwisp.app.service.impl;
 
 import com.eventwisp.app.dto.OrganizerUpdateDto;
+import com.eventwisp.app.dto.organizer.CreateOrganizerDto;
 import com.eventwisp.app.dto.organizer.EarningDetails;
 import com.eventwisp.app.dto.organizer.OrganizerDetailsDto;
 import com.eventwisp.app.dto.organizer.OrganizerStatusDto;
@@ -30,8 +31,23 @@ public class OrganizerServiceImpl implements OrganizerService {
 
     //create a new organizer
     @Override
-    public Organizer addOrganizer(Organizer organizer) {
-        return organizerRepository.save(organizer);
+    public Organizer addOrganizer(CreateOrganizerDto createOrganizerDto) {
+
+        Organizer organizer=new Organizer();
+
+        organizer.setFirstName(createOrganizerDto.getFirstName());
+        organizer.setLastName(createOrganizerDto.getLastName());
+        organizer.setNic(createOrganizerDto.getNic());
+        organizer.setCompanyName(createOrganizerDto.getCompanyName());
+        organizer.setPhone(createOrganizerDto.getPhone());
+        organizer.setEmail(createOrganizerDto.getEmail());
+        organizer.setPassword(createOrganizerDto.getPassword());
+
+        Organizer savedOrganizer=organizerRepository.save(organizer);
+
+        savedOrganizer.setOrganizerId("ORG-"+savedOrganizer.getId());
+
+        return organizerRepository.save(savedOrganizer);
     }
 
     //find all organizers
@@ -121,6 +137,38 @@ public class OrganizerServiceImpl implements OrganizerService {
         details.setCurrentBalance(organizer.getCurrentBalance());
 
         // Set the response
+        response.setMessage("Organizer details found");
+        response.setEntityData(details);
+
+        return response;
+    }
+
+    //find organizer details by organizer id
+    @Override
+    public SingleEntityResponse<OrganizerDetailsDto> getOrganizerDetailsByOrganizerId(String organizerId) {
+        SingleEntityResponse<OrganizerDetailsDto> response = new SingleEntityResponse<>();
+
+        Organizer organizer = organizerRepository.findOrganizerByOrganizerId(organizerId);
+        if (organizer == null) {
+            response.setMessage("Organizer not found with ID: " + organizerId);
+            return response;
+        }
+
+        OrganizerDetailsDto details = new OrganizerDetailsDto();
+        details.setId(organizer.getId());
+        details.setOrganizerId(organizer.getOrganizerId());
+        details.setName(organizer.getFirstName() + " " + organizer.getLastName());
+        details.setNic(organizer.getNic());
+        details.setCompanyName(organizer.getCompanyName());
+        details.setEmail(organizer.getEmail());
+        details.setPhone(organizer.getPhone());
+        details.setPendingApproval(organizer.getPendingApproval());
+        details.setIsApproved(organizer.getIsApproved());
+        details.setIsDisapproved(organizer.getIsDisapproved());
+        details.setTotalEarnings(organizer.getTotalEarnings());
+        details.setTotalWithdrawals(organizer.getTotalWithdrawals());
+        details.setCurrentBalance(organizer.getCurrentBalance());
+
         response.setMessage("Organizer details found");
         response.setEntityData(details);
 
@@ -233,6 +281,7 @@ public class OrganizerServiceImpl implements OrganizerService {
         return response;
     }
 
+    //find earning details by organizer
     @Override
     public SingleEntityResponse<EarningDetails> getEarningsByOrganizer(Long organizerId) {
 
@@ -249,7 +298,36 @@ public class OrganizerServiceImpl implements OrganizerService {
 
         EarningDetails earningDetails=new EarningDetails();
 
-        earningDetails.setOrganizerId(organizer.getId());
+        earningDetails.setOrganizerId(organizer.getOrganizerId());
+        earningDetails.setOrganizerName(organizer.getFirstName() + " " + organizer.getLastName());
+        earningDetails.setTotalEarnings(organizer.getTotalEarnings());
+        earningDetails.setCurrentBalance(organizer.getCurrentBalance());
+        earningDetails.setTotalWithdrawals(organizer.getTotalWithdrawals());
+
+        response.setMessage("Earning details of organizer : "+organizer.getFirstName()+" "+organizer.getLastName());
+        response.setEntityData(earningDetails);
+
+        return response;
+    }
+
+
+    //find earning details by generated organizer id
+    @Override
+    public SingleEntityResponse<EarningDetails> getEarningsByOrganizerId(String organizerId) {
+        //create response object
+        SingleEntityResponse<EarningDetails> response = new SingleEntityResponse<>();
+
+        //fetch earning details from organizer
+        Organizer organizer=organizerRepository.findOrganizerByOrganizerId(organizerId);
+
+        if(organizer == null) {
+            response.setMessage("Organizer not found");
+            return response;
+        }
+
+        EarningDetails earningDetails=new EarningDetails();
+
+        earningDetails.setOrganizerId(organizer.getOrganizerId());
         earningDetails.setOrganizerName(organizer.getFirstName() + " " + organizer.getLastName());
         earningDetails.setTotalEarnings(organizer.getTotalEarnings());
         earningDetails.setCurrentBalance(organizer.getCurrentBalance());
@@ -277,7 +355,7 @@ public class OrganizerServiceImpl implements OrganizerService {
         List<EarningDetails> detailsList = organizers.stream()
                 .map(o -> {
                     EarningDetails d = new EarningDetails();
-                    d.setOrganizerId(o.getId());
+                    d.setOrganizerId(o.getOrganizerId());
                     d.setOrganizerName(o.getFirstName() + " " + o.getLastName());
                     d.setTotalEarnings(o.getTotalEarnings());
                     d.setTotalWithdrawals(o.getTotalWithdrawals());

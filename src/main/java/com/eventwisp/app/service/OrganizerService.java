@@ -1,6 +1,7 @@
 package com.eventwisp.app.service;
 
 import com.eventwisp.app.dto.OrganizerUpdateDto;
+import com.eventwisp.app.dto.organizer.CreateOrganizerDto;
 import com.eventwisp.app.dto.organizer.EarningDetails;
 import com.eventwisp.app.dto.organizer.OrganizerDetailsDto;
 import com.eventwisp.app.dto.organizer.OrganizerStatusDto;
@@ -14,7 +15,7 @@ import java.util.List;
 
 @Service
 public interface OrganizerService {
-    Organizer addOrganizer(Organizer organizer);
+    Organizer addOrganizer(CreateOrganizerDto createOrganizerDto);
 
     List<Organizer> getAllOrganizers();
 
@@ -23,6 +24,9 @@ public interface OrganizerService {
     Integer getOrganizerCount();
 
     SingleEntityResponse<OrganizerDetailsDto> getOrganizerDetailsById(Long id);
+
+    //find organizer details by organizer id
+    SingleEntityResponse<OrganizerDetailsDto> getOrganizerDetailsByOrganizerId(String organizerId);
 
     //find all pending organizer accounts
     MultipleEntityResponse<OrganizerDetailsDto> getPendingOrganizers();
@@ -35,6 +39,9 @@ public interface OrganizerService {
 
     //get earnings by organizer
     SingleEntityResponse<EarningDetails> getEarningsByOrganizer(Long organizerId);
+
+    //get earnings by organizer
+    SingleEntityResponse<EarningDetails> getEarningsByOrganizerId(String organizerId);
 
     //get earnings by all organizers
     MultipleEntityResponse<EarningDetails> getEarningsByAllOrganizers();

@@ -123,10 +123,42 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public SingleEntityResponse<TransactionDetails> findTransactionById(Long transactionId) {
+    public SingleEntityResponse<TransactionDetails> findTransactionById(Long id) {
 
         SingleEntityResponse<TransactionDetails> response = new SingleEntityResponse<>();
-        Optional<Transaction> optionalTransaction = transactionRepository.findById(transactionId);
+
+        Optional<Transaction> optionalTransaction = transactionRepository.findById(id);
+
+        if (optionalTransaction.isEmpty()) {
+            response.setMessage("Transaction not found with id: " + id);
+            response.setEntityData(null);
+            return response;
+        }
+
+        Transaction tx = optionalTransaction.get();
+        TransactionDetails details = new TransactionDetails();
+
+        details.setId(tx.getId());
+        details.setTransactionId(tx.getTransactionId());
+        details.setAmount(tx.getAmount());
+        details.setOrganizerId(tx.getOrganizer().getId());
+        details.setOrganizerName(tx.getOrganizer().getFirstName() + " " + tx.getOrganizer().getLastName());
+        details.setDate(tx.getDate());
+        details.setTime(tx.getTime());
+        details.setStatus(tx.getTransactionStatus().toString());
+
+        response.setMessage("Transaction retrieved successfully");
+        response.setEntityData(details);
+
+        return response;
+    }
+
+    //find transaction by generated transaction id
+    @Override
+    public SingleEntityResponse<TransactionDetails> findTransactionByTransactionId(String transactionId) {
+        SingleEntityResponse<TransactionDetails> response = new SingleEntityResponse<>();
+
+        Optional<Transaction> optionalTransaction = transactionRepository.findByTransactionId(transactionId);
 
         if (optionalTransaction.isEmpty()) {
             response.setMessage("Transaction not found with id: " + transactionId);

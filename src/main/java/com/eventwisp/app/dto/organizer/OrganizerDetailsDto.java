@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 @Getter
 public class OrganizerDetailsDto {
     private Long id;
+    private String organizerId;
     private String name;
     private String nic;
     private String companyName;
