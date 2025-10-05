@@ -45,15 +45,27 @@ public class TransactionController {
     }
 
     // Get transaction by ID
-    @GetMapping("/transactions/{transactionId}")
-    public ResponseEntity<?> findTransactionById(@PathVariable Long transactionId) {
+    @GetMapping("/transactions/{id}")
+    public ResponseEntity<?> findTransactionById(@PathVariable Long id) {
         try {
-            SingleEntityResponse<TransactionDetails> response = transactionService.findTransactionById(transactionId);
+            SingleEntityResponse<TransactionDetails> response = transactionService.findTransactionById(id);
 
             // Check if transaction was found
             if (response.getEntityData() == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    //find transaction by transaction id
+    @GetMapping("/transactions/id/{transactionId}")
+    public ResponseEntity<?> findTransactionByTransactionId(@PathVariable String transactionId) {
+        try {
+            SingleEntityResponse<TransactionDetails> response = transactionService.findTransactionByTransactionId(transactionId);
 
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (Exception e) {

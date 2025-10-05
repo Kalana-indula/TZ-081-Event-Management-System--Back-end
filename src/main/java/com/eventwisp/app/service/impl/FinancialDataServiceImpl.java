@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 public class FinancialDataServiceImpl implements FinancialDataService {
@@ -25,6 +26,17 @@ public class FinancialDataServiceImpl implements FinancialDataService {
     @Override
     public FinancialData addInitialData(FinancialData financialData) {
 
+        List<FinancialData> existingFinancialData = financialDataRepository.findAll();
+
+        if(!existingFinancialData.isEmpty()) {
+            //update existing data
+            FinancialData existing=existingFinancialData.get(0);
+            existing.setCommission(financialData.getCommission());
+            existing.setPlatformBalance(financialData.getPlatformBalance());
+
+            return financialDataRepository.save(existing);
+        }
+
         return financialDataRepository.save(financialData);
     }
 
@@ -33,17 +45,15 @@ public class FinancialDataServiceImpl implements FinancialDataService {
 
         SingleEntityResponse<Double> response = new SingleEntityResponse<>();
 
-        //fetch current data
-        FinancialData data=financialDataRepository.findById(1).orElse(null);
+        List<FinancialData> financialData = financialDataRepository.findAll();
 
-        if(data==null){
-            response.setMessage("No data found");
-            return response;
+        if(financialData.isEmpty()){
+            response.setMessage("No data was found");
+            response.setEntityData(null);
+        }else {
+            response.setMessage("System financial data fetched successfully");
+            response.setEntityData(financialData.get(0).getCommission());
         }
-
-
-        response.setMessage("Commission: " + data.getCommission());
-        response.setEntityData(data.getCommission());
 
         return response;
     }
@@ -53,62 +63,58 @@ public class FinancialDataServiceImpl implements FinancialDataService {
 
         SingleEntityResponse<BigDecimal> response = new SingleEntityResponse<>();
 
-        //fetch financial data
-        FinancialData data=financialDataRepository.findById(1).orElse(null);
+        List<FinancialData> financialData = financialDataRepository.findAll();
 
-        if(data==null){
-            response.setMessage("No data found");
-            return response;
+        if(financialData.isEmpty()){
+            response.setMessage("No data was found");
+            response.setEntityData(null);
+        }else {
+            response.setMessage("System financial data fetched successfully");
+            response.setEntityData(financialData.get(0).getPlatformBalance());
         }
 
-        response.setMessage("Current Balance: "+data.getPlatformBalance());
-        response.setEntityData(data.getPlatformBalance());
         return response;
     }
 
     @Override
     public SingleEntityResponse<Double> updateCommission(CommissionUpdate commissionUpdate) {
-
         SingleEntityResponse<Double> response = new SingleEntityResponse<>();
 
-        //fetch financial data
-        FinancialData existingData=financialDataRepository.findById(1).orElse(null);
+        List<FinancialData> financialData = financialDataRepository.findAll();
 
-        if(existingData==null){
-            response.setMessage("No data found");
+        if (financialData.isEmpty()) {
+            response.setMessage("No data was found");
+            response.setEntityData(null);
             return response;
         }
 
-        existingData.setCommission(commissionUpdate.getCommission());
+        FinancialData existing = financialData.get(0);
+        existing.setCommission(commissionUpdate.getCommission());
+        FinancialData updated = financialDataRepository.save(existing);
 
-        FinancialData updatedData=financialDataRepository.save(existingData);
-
-        response.setMessage("New Commission: " + updatedData.getCommission());
-        response.setEntityData(updatedData.getCommission());
-
+        response.setMessage("New Commission: " + updated.getCommission());
+        response.setEntityData(updated.getCommission());
         return response;
     }
 
     @Override
     public SingleEntityResponse<BigDecimal> updateBalance(UpdateBalance updateBalance) {
-
         SingleEntityResponse<BigDecimal> response = new SingleEntityResponse<>();
 
-        //fetch existing data
-        FinancialData existingData=financialDataRepository.findById(1).orElse(null);
+        List<FinancialData> financialData = financialDataRepository.findAll();
 
-        if(existingData==null){
-            response.setMessage("No data found");
+        if (financialData.isEmpty()) {
+            response.setMessage("No data was found");
+            response.setEntityData(null);
             return response;
         }
 
-        existingData.setPlatformBalance(updateBalance.getBalance());
+        FinancialData existing = financialData.get(0);
+        existing.setPlatformBalance(updateBalance.getBalance());
+        FinancialData updated = financialDataRepository.save(existing);
 
-        FinancialData updatedData=financialDataRepository.save(existingData);
-
-        response.setMessage("New Balance: " + updatedData.getPlatformBalance());
-        response.setEntityData(updatedData.getPlatformBalance());
-
+        response.setMessage("New Balance: " + updated.getPlatformBalance());
+        response.setEntityData(updated.getPlatformBalance());
         return response;
     }
 

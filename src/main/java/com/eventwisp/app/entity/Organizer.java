@@ -21,6 +21,9 @@ public class Organizer {
     @Column(name = "id")
     private Long id;
 
+    @Column(name = "organizer_id")
+    private String organizerId;
+
     @Column(name = "first_name")
     private String firstName;
 

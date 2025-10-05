@@ -16,7 +16,10 @@ public interface TransactionService {
     MultipleEntityResponse<TransactionDetails> getAllTransactions();
 
     //find transactions by id
-    SingleEntityResponse<TransactionDetails> findTransactionById(Long transactionId);
+    SingleEntityResponse<TransactionDetails> findTransactionById(Long id);
+
+    //find transaction by generated transaction id
+    SingleEntityResponse<TransactionDetails> findTransactionByTransactionId(String transactionId);
 
     //find transactions by organizer
     MultipleEntityResponse<TransactionDetails> findTransactionsByOrganizer(Long organizerId);

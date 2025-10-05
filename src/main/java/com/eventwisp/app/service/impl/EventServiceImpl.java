@@ -17,6 +17,7 @@ import com.eventwisp.app.service.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -629,6 +630,16 @@ public class EventServiceImpl implements EventService {
                 }
             }
 
+            //set system earnings
+            List<FinancialData> currentData=financialDataRepository.findAll();
+
+            //get the total earnings
+            BigDecimal currentEarnings=currentData.get(0).getPlatformBalance();
+
+            //update total earnings
+            currentData.get(0).setPlatformBalance(currentEarnings.add(savedEvent.getEarningsByEvent()));
+
+            financialDataRepository.save(currentData.get(0));
         }
 
         response.setMessage("Event updated successfully");

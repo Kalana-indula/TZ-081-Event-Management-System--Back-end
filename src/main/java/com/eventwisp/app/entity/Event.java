@@ -37,7 +37,9 @@ public class Event {
     @Column(name = "cover_image_link")
     private String coverImageLink;
 
-    @Column(name = "description")
+    //mark this field as it accepts large text objects
+    @Lob
+    @Column(name = "description", columnDefinition = "LONGTEXT")
     private String description;
 
     @Column(name="is_approved")
