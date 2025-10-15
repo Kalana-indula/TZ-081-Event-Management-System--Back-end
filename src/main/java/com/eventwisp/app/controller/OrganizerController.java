@@ -1,18 +1,25 @@
 package com.eventwisp.app.controller;
 
-import com.eventwisp.app.dto.OrganizerUpdateDto;
+import com.eventwisp.app.dto.accountActions.DeleteUserDto;
 import com.eventwisp.app.dto.organizer.CreateOrganizerDto;
 import com.eventwisp.app.dto.organizer.EarningDetails;
 import com.eventwisp.app.dto.organizer.OrganizerDetailsDto;
 import com.eventwisp.app.dto.organizer.OrganizerStatusDto;
+import com.eventwisp.app.dto.response.UpdatePasswordResponse;
+import com.eventwisp.app.dto.response.general.DeleteAccountResponse;
 import com.eventwisp.app.dto.response.general.MultipleEntityResponse;
 import com.eventwisp.app.dto.response.general.SingleEntityResponse;
 import com.eventwisp.app.dto.response.general.UpdateResponse;
+import com.eventwisp.app.dto.updateData.UpdateContactDetailsDto;
+import com.eventwisp.app.dto.updateData.UpdateEmailDto;
+import com.eventwisp.app.dto.updateData.UpdatePasswordDto;
 import com.eventwisp.app.entity.Organizer;
 import com.eventwisp.app.service.OrganizerService;
+import com.eventwisp.app.service.impl.MailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,10 +32,19 @@ public class OrganizerController {
     //Create an instance of "OrganizerService"
     private OrganizerService organizerService;
 
+    //get a password encoder
+    private PasswordEncoder passwordEncoder;
+
+    private MailService mailService;
+
     //Inject an instance of "OrgnizerSerivce"
     @Autowired
-    public OrganizerController(OrganizerService organizerService){
+    public OrganizerController(OrganizerService organizerService,
+                               PasswordEncoder passwordEncoder,
+                               MailService mailService){
         this.organizerService=organizerService;
+        this.passwordEncoder=passwordEncoder;
+        this.mailService=mailService;
     }
 
     @PostMapping("/organizers")
@@ -209,18 +225,35 @@ public class OrganizerController {
         }
     }
 
-    //Update organizer
-    @PutMapping("/organizers/{id}")
-    public ResponseEntity<?> updateOrganizer(@PathVariable Long id,@RequestBody OrganizerUpdateDto organizerUpdateDto){
+    //update password
+    @PutMapping("/organizers/{id}/password")
+    public ResponseEntity<?> updateOrganizerPassword(@PathVariable Long id, @RequestBody UpdatePasswordDto passwordDto){
         try{
-            Organizer updatedOrganizer= organizerService.updateOrganizer(id,organizerUpdateDto);
+            UpdatePasswordResponse<Organizer> response=organizerService.updateOrganizerPassword(id,passwordDto);
 
-            //Check if updatedOrganizer is null
-            if(updatedOrganizer==null){
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No organizer found for the corresponding id");
-            }
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
 
-            return ResponseEntity.status(HttpStatus.OK).body(updatedOrganizer);
+    @PutMapping("/organizers/{id}/email")
+    public ResponseEntity<?> updateOrganizerEmail(@PathVariable Long id, @RequestBody UpdateEmailDto emailDto){
+        try{
+            SingleEntityResponse<Organizer> response=organizerService.updateOrganizerEmail(id,emailDto);
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/organizers/{id}/contact")
+    public ResponseEntity<?> updateOrganizerContactDetails(@PathVariable Long id, @RequestBody UpdateContactDetailsDto contactDetailsDto){
+        try{
+            SingleEntityResponse<Organizer> response=organizerService.updateOrganizerContactDetails(id,contactDetailsDto);
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
@@ -243,15 +276,19 @@ public class OrganizerController {
     }
 
     @DeleteMapping("/organizers/{id}")
-    public ResponseEntity<?> deleteById(@PathVariable Long id){
+    public ResponseEntity<?> deleteById(@PathVariable Long id,@RequestBody DeleteUserDto deleteUserDto){
         try{
-            boolean isDeleted=organizerService.deleteOrganizer(id);
+            //get organizer name
+            SingleEntityResponse<OrganizerDetailsDto> organizerDetails=organizerService.getOrganizerDetailsById(id);
 
-            if(isDeleted){
-                return ResponseEntity.status(HttpStatus.OK).body("Organizer deleted successfully");
-            }
+            String organizerName=organizerDetails.getEntityData().getName();
 
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Organizer not found");
+            DeleteAccountResponse response=organizerService.deleteOrganizer(id,deleteUserDto);
+
+            //send email after deletion
+            mailService.deleteOrganizerEmail(deleteUserDto.getEmail(),organizerName);
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }

@@ -1,16 +1,24 @@
 package com.eventwisp.app.service.impl;
 
 import com.eventwisp.app.dto.ManagerUpdateDto;
+import com.eventwisp.app.dto.accountActions.DeleteUserDto;
+import com.eventwisp.app.dto.response.UpdatePasswordResponse;
+import com.eventwisp.app.dto.response.general.SingleEntityResponse;
 import com.eventwisp.app.dto.response.general.UpdateResponse;
+import com.eventwisp.app.dto.updateData.UpdateContactDetailsDto;
+import com.eventwisp.app.dto.updateData.UpdateEmailDto;
+import com.eventwisp.app.dto.updateData.UpdatePasswordDto;
 import com.eventwisp.app.entity.Manager;
 import com.eventwisp.app.repository.ManagerRepository;
 import com.eventwisp.app.service.ManagerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 public class ManagerServiceImpl implements ManagerService {
@@ -18,10 +26,13 @@ public class ManagerServiceImpl implements ManagerService {
     //creating an instance of manager repository
     private ManagerRepository managerRepository;
 
+    private PasswordEncoder passwordEncoder;
+
     //injecting 'ManagerRepository'
     @Autowired
-    public ManagerServiceImpl(ManagerRepository managerRepository){
+    public ManagerServiceImpl(ManagerRepository managerRepository, PasswordEncoder passwordEncoder){
         this.managerRepository=managerRepository;
+        this.passwordEncoder=passwordEncoder;
     }
 
     //Create a new manager
@@ -40,6 +51,16 @@ public class ManagerServiceImpl implements ManagerService {
     @Override
     public Manager findManagerById(Long id) {
         return managerRepository.findById(id).orElse(null);
+    }
+
+    @Override
+    public Optional<Manager> findByEmail(String email) {
+        return managerRepository.findByEmail(email);
+    }
+
+    @Override
+    public Boolean isExistsByEmail(String email) {
+        return managerRepository.existsByEmail(email);
     }
 
     //find currently assigned manager
@@ -90,10 +111,92 @@ public class ManagerServiceImpl implements ManagerService {
             existingManager.setPassword(currentPassword);
         }else {
             //If false set new password
+            //encode password
+            managerUpdateDto.setPassword(passwordEncoder.encode(managerUpdateDto.getPassword()));
+
             existingManager.setPassword(managerUpdateDto.getPassword());
         }
 
         return managerRepository.save(existingManager);
+    }
+
+    @Override
+    public UpdatePasswordResponse<Manager> updateManagerPassword(Long id, UpdatePasswordDto updatePasswordDto) {
+        UpdatePasswordResponse<Manager> response = new UpdatePasswordResponse<>();
+
+        // Find existing Manager
+        Manager existingManager = managerRepository.findById(id).orElse(null);
+        if (existingManager == null) {
+            response.setSuccess(false);
+            response.setMessage("Manager not found");
+            return response;
+        }
+
+        //check if the passwords are correct
+        boolean isPasswordMatch = passwordEncoder.matches(
+                updatePasswordDto.getCurrentPassword(),
+                existingManager.getPassword()
+        );
+
+        if (!isPasswordMatch) {
+            response.setSuccess(false);
+            response.setMessage("Current password is incorrect");
+            return response;
+        }
+
+        // Encode and update password
+        String updatedPassword = passwordEncoder.encode(updatePasswordDto.getNewPassword());
+
+        existingManager.setPassword(updatedPassword);
+
+        Manager updatedAdmin = managerRepository.save(existingManager);
+
+        response.setSuccess(true);
+        response.setMessage("Manager password updated successfully");
+        response.setEntityData(updatedAdmin);
+        return response;
+    }
+
+    @Override
+    public SingleEntityResponse<Manager> updateManagerEmail(Long id, UpdateEmailDto updateEmailDto) {
+        SingleEntityResponse<Manager> response = new SingleEntityResponse<>();
+
+        // Find existing Manager
+        Manager existingManager = managerRepository.findById(id).orElse(null);
+        if (existingManager == null) {
+            response.setMessage("Manager not found");
+            return response;
+        }
+
+        // Update email (no encoding)
+        existingManager.setEmail(updateEmailDto.getEmail());
+
+        Manager updated = managerRepository.save(existingManager);
+
+        response.setMessage("Manager email updated successfully");
+        response.setEntityData(updated);
+        return response;
+    }
+
+    @Override
+    public SingleEntityResponse<Manager> updateManagerContactDetails(Long id, UpdateContactDetailsDto updateContactDetailsDto) {
+        SingleEntityResponse<Manager> response = new SingleEntityResponse<>();
+
+        // Find existing Manager
+        Manager existingManager = managerRepository.findById(id).orElse(null);
+        if (existingManager == null) {
+            response.setMessage("Manager not found");
+            return response;
+        }
+
+        // Update contact details (assuming 'phone' is the field)
+        existingManager.setPhone(updateContactDetailsDto.getContactDetails());
+
+        Manager updated = managerRepository.save(existingManager);
+
+        response.setMessage("Manager contact details updated successfully");
+        response.setEntityData(updated);
+        return response;
     }
 
     @Override
@@ -156,15 +259,30 @@ public class ManagerServiceImpl implements ManagerService {
 
     //Delete an existing manager
     @Override
-    public Boolean deleteManager(Long id) {
+    public String deleteManager(Long id, DeleteUserDto deleteUserDto) {
 
-        //Check if a 'Manager' exists
-        boolean isExist=managerRepository.existsById(id);
+        Manager existingManager = managerRepository.findById(id).orElse(null);
 
-        if(isExist){
-            managerRepository.deleteById(id);
-            return true;
+        if(existingManager==null){
+            return "Manager not found";
         }
-        return false;
+
+        //check if the password is incorrect
+        boolean isPasswordMatch = passwordEncoder.matches(
+                deleteUserDto.getPassword(),
+                existingManager.getPassword()
+        );
+
+        if (!isPasswordMatch) {
+            return "Wrong password";
+        }
+
+        if(!Objects.equals(deleteUserDto.getEmail(), existingManager.getEmail())){
+            return "Wrong email";
+        }
+
+        managerRepository.deleteById(id);
+
+        return "Manager deleted successfully";
     }
 }

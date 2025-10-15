@@ -50,6 +50,17 @@ public class Booking {
     @Column(name = "ticket_count")
     private Integer ticketCount;
 
+    //ticket issued data
+    @Column(name = "ticket_issued")
+    private Boolean ticketIssued=false;
+
+    //get ticket issued date
+    @Column(name = "ticket_issued_date")
+    private LocalDate ticketIssuedDate;
+
+    @Column(name = "ticket_issued_time")
+    private LocalTime ticketIssuedTime;
+
     //session
     @ManyToOne
     @JoinColumn(name = "session_id")

@@ -1,11 +1,10 @@
 package com.eventwisp.app.controller.auth;
 
 import com.eventwisp.app.dto.auth.AuthUserDetails;
-import com.eventwisp.app.dto.organizer.CreateOrganizerDto;
-import com.eventwisp.app.dto.organizer.OrganizerLoginDto;
-import com.eventwisp.app.entity.Organizer;
+import com.eventwisp.app.dto.manager.ManagerLoginDto;
+import com.eventwisp.app.entity.Manager;
 import com.eventwisp.app.security.jwt.JwtUtils;
-import com.eventwisp.app.service.OrganizerService;
+import com.eventwisp.app.service.ManagerService;
 import com.eventwisp.app.service.impl.MailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,9 +21,9 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "*")
-public class OrganizerAuthController {
+public class ManagerAuthController {
 
-    private OrganizerService organizerService;
+    private ManagerService managerService;
 
     private PasswordEncoder passwordEncoder;
 
@@ -35,44 +34,44 @@ public class OrganizerAuthController {
     private MailService mailService;
 
     @Autowired
-    public OrganizerAuthController(OrganizerService organizerService,
-                                   PasswordEncoder passwordEncoder,
-                                   AuthenticationManager authenticationManager,
-                                   JwtUtils jwtUtils,
-                                   MailService mailService){
-        this.organizerService = organizerService;
+    public ManagerAuthController(ManagerService managerService,
+                                 PasswordEncoder passwordEncoder,
+                                 AuthenticationManager authenticationManager,
+                                 JwtUtils jwtUtils,
+                                 MailService mailService) {
+        this.managerService = managerService;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtUtils = jwtUtils;
         this.mailService = mailService;
     }
 
-    //register organizer
-    @PostMapping("/organizers")
-    public ResponseEntity<?> registerOrganizer(@RequestBody CreateOrganizerDto createOrganizerDto){
+    //register manager
+    @PostMapping("/managers")
+    public ResponseEntity<?> registerManager(@RequestBody Manager manager){
 
-        if (organizerService.isExistsByEmail(createOrganizerDto.getEmail())){
+        if (managerService.isExistsByEmail(manager.getEmail())){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email Already Exists");
         }
 
         //encode the password
-        createOrganizerDto.setPassword(passwordEncoder.encode(createOrganizerDto.getPassword()));
+        manager.setPassword(passwordEncoder.encode(manager.getPassword()));
 
         //save
-        Organizer savedOrganizer=organizerService.addOrganizer(createOrganizerDto);
+        Manager savedManager=managerService.createManager(manager);
 
         //send email
-        mailService.registerOrganizerEmail(savedOrganizer.getEmail(),savedOrganizer.getFirstName());
+        mailService.registerManagerEmail(savedManager.getEmail(),savedManager.getFirstName());
 
-        return ResponseEntity.status(HttpStatus.OK).body(savedOrganizer);
+        return ResponseEntity.status(HttpStatus.OK).body(managerService.createManager(savedManager));
     }
 
     //login as organizer
-    @PostMapping("/organizers/login")
-    public ResponseEntity<?> loginAsOrganizer(@RequestBody OrganizerLoginDto organizerLoginDto){
+    @PostMapping("/managers/login")
+    public ResponseEntity<?> loginAsOrganizer(@RequestBody ManagerLoginDto managerLoginDto){
         //authenticate the user
         Authentication authentication=authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(organizerLoginDto.getEmail(), organizerLoginDto.getPassword()));
+                new UsernamePasswordAuthenticationToken(managerLoginDto.getEmail(), managerLoginDto.getPassword()));
 
         //set the user as authenticated
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -80,17 +79,16 @@ public class OrganizerAuthController {
         //generate token
         String jwt = jwtUtils.generateJwtToken(authentication);
 
-        //find organizer
-        Optional<Organizer> existingOrganizer=organizerService.findOrganizerByEmail(organizerLoginDto.getEmail());
+        //find manager
+        Optional<Manager> existingManager =managerService.findByEmail(managerLoginDto.getEmail());
 
         AuthUserDetails userDetails=new AuthUserDetails();
 
         userDetails.setAuthToken(jwt);
-        userDetails.setUserId(existingOrganizer.get().getId());
-        userDetails.setUserName(existingOrganizer.get().getFirstName());
-        userDetails.setUserRole(String.valueOf(existingOrganizer.get().getUserRole()));
+        userDetails.setUserId(existingManager.get().getId());
+        userDetails.setUserName(existingManager.get().getFirstName());
+        userDetails.setUserRole(String.valueOf(existingManager.get().getUserRole()));
 
         return ResponseEntity.status(HttpStatus.OK).body(userDetails);
     }
-
 }
