@@ -4,6 +4,9 @@ import com.eventwisp.app.dto.BookingDto;
 import com.eventwisp.app.dto.booking.BookingDetailsDto;
 import com.eventwisp.app.dto.response.CreateBookingResponse;
 import com.eventwisp.app.dto.response.general.MultipleEntityResponse;
+import com.eventwisp.app.dto.response.general.SingleEntityResponse;
+import com.eventwisp.app.dto.ticket.BookedTicketDetailsDto;
+import com.eventwisp.app.dto.ticket.TicketIssueDto;
 import com.eventwisp.app.entity.*;
 import com.eventwisp.app.repository.*;
 import com.eventwisp.app.service.BookingService;
@@ -113,7 +116,6 @@ public class BookingServiceImpl implements BookingService {
                 bookedTickets.add(ticket);
                 totalPrice += ticket.getPrice();
             }
-
         }
 
         //calculate the profit from the booking
@@ -162,14 +164,21 @@ public class BookingServiceImpl implements BookingService {
 
         Booking newBooking = bookingRepository.save(booking);
 
+        //get booked ticket list
+        List<Ticket> bookedTicketList=newBooking.getTickets();
+
+        List<BookedTicketDetailsDto> ticketDetails=getBookedTicketDetails(bookedTicketList);
+
         //get new booking details
         BookingDetailsDto bookingDetails = new BookingDetailsDto();
 
         bookingDetails.setBookingId(newBooking.getBookingId());
+        bookingDetails.setEventName(existingSession.getEvent().getEventName());
         bookingDetails.setName(newBooking.getFirstName() + " " + newBooking.getLastName());
         bookingDetails.setEmail(newBooking.getEmail());
         bookingDetails.setPhone(newBooking.getPhone());
         bookingDetails.setNic(newBooking.getIdNumber());
+        bookingDetails.setTicketDetails(ticketDetails);
 
         response.setMessage("Booking successful");
         response.setBookingDetails(bookingDetails);
@@ -236,6 +245,7 @@ public class BookingServiceImpl implements BookingService {
         // map bookings -> DTOs
         List<BookingDetailsDto> bookingDtos = new ArrayList<>();
         for (Booking booking : bookingList) {
+
             BookingDetailsDto dto = new BookingDetailsDto();
             dto.setBookingId(booking.getBookingId());
             dto.setName(booking.getFirstName() + " " + booking.getLastName());
@@ -248,6 +258,37 @@ public class BookingServiceImpl implements BookingService {
 
         response.setMessage("Bookings List");
         response.setEntityList(bookingDtos);
+
+        return response;
+    }
+
+    //issue ticket and get confirmed tickets are issued to the attendee at the counter
+    @Override
+    public SingleEntityResponse<TicketIssueDto> issueTickets(String bookingId) {
+
+        //find booking details
+        Booking existingBooking=bookingRepository.findByBookingId(bookingId);
+
+        SingleEntityResponse<TicketIssueDto> response=new SingleEntityResponse<>();
+
+        existingBooking.setTicketIssued(true);
+        existingBooking.setTicketIssuedDate(LocalDate.now());
+        existingBooking.setTicketIssuedTime(LocalTime.now());
+
+        //save updated booking
+        Booking updatedBooking = bookingRepository.save(existingBooking);
+
+        //get ticket issuance log
+        TicketIssueDto ticketIssueDto = new TicketIssueDto();
+
+        ticketIssueDto.setBookingId(updatedBooking.getBookingId());
+        ticketIssueDto.setEventName(updatedBooking.getEvent().getEventName());
+        ticketIssueDto.setIssueDate(updatedBooking.getTicketIssuedDate());
+        ticketIssueDto.setIssueTime(updatedBooking.getTicketIssuedTime());
+        ticketIssueDto.setTicketIssued(updatedBooking.getTicketIssued());
+
+        response.setEntityData(ticketIssueDto);
+        response.setMessage("Ticket issued successfully for booking id: " + updatedBooking.getBookingId());
 
         return response;
     }
@@ -284,6 +325,38 @@ public class BookingServiceImpl implements BookingService {
                 sessionTicketRepository.save(sessionTicket);
             }
         }
+    }
+
+    //get ticket details from a booking
+    private List<BookedTicketDetailsDto> getBookedTicketDetails(List<Ticket> tickets) {
+        List<BookedTicketDetailsDto> result = new ArrayList<>();
+        if (tickets == null || tickets.isEmpty()) return result;
+
+        for (Ticket t : tickets) {
+            if (t == null) continue;
+            String type = t.getTicketType(); // adapt if your getter differs
+            if (type == null || type.isBlank()) type = "UNKNOWN";
+
+            // find existing dto with same ticketType (case-insensitive match)
+            BookedTicketDetailsDto existing = null;
+            for (BookedTicketDetailsDto dto : result) {
+                if (dto.getTicketType().equalsIgnoreCase(type)) {
+                    existing = dto;
+                    break;
+                }
+            }
+
+            if (existing != null) {
+                existing.setTicketCount(existing.getTicketCount() + 1);
+            } else {
+                BookedTicketDetailsDto dto = new BookedTicketDetailsDto();
+                dto.setTicketType(type);
+                dto.setTicketCount(1);
+                result.add(dto);
+            }
+        }
+
+        return result;
     }
 
 }

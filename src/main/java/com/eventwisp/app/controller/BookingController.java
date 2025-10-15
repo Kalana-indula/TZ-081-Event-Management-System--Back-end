@@ -4,6 +4,8 @@ import com.eventwisp.app.dto.BookingDto;
 import com.eventwisp.app.dto.booking.BookingDetailsDto;
 import com.eventwisp.app.dto.response.CreateBookingResponse;
 import com.eventwisp.app.dto.response.general.MultipleEntityResponse;
+import com.eventwisp.app.dto.response.general.SingleEntityResponse;
+import com.eventwisp.app.dto.ticket.TicketIssueDto;
 import com.eventwisp.app.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -61,6 +63,18 @@ public class BookingController {
         try {
             // get bookings
             MultipleEntityResponse<BookingDetailsDto> response = bookingService.findBookingsByEvent(eventId);
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/events/{bookingId}/issue-tickets")
+    public ResponseEntity<?> issueTickets(@PathVariable String bookingId) {
+        try {
+
+            SingleEntityResponse<TicketIssueDto> response=bookingService.issueTickets(bookingId);
 
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (Exception e) {

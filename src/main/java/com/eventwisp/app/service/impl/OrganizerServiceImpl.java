@@ -1,21 +1,29 @@
 package com.eventwisp.app.service.impl;
 
-import com.eventwisp.app.dto.OrganizerUpdateDto;
+import com.eventwisp.app.dto.accountActions.DeleteUserDto;
 import com.eventwisp.app.dto.organizer.CreateOrganizerDto;
 import com.eventwisp.app.dto.organizer.EarningDetails;
 import com.eventwisp.app.dto.organizer.OrganizerDetailsDto;
 import com.eventwisp.app.dto.organizer.OrganizerStatusDto;
+import com.eventwisp.app.dto.response.UpdatePasswordResponse;
+import com.eventwisp.app.dto.response.general.DeleteAccountResponse;
 import com.eventwisp.app.dto.response.general.MultipleEntityResponse;
 import com.eventwisp.app.dto.response.general.SingleEntityResponse;
 import com.eventwisp.app.dto.response.general.UpdateResponse;
+import com.eventwisp.app.dto.updateData.UpdateContactDetailsDto;
+import com.eventwisp.app.dto.updateData.UpdateEmailDto;
+import com.eventwisp.app.dto.updateData.UpdatePasswordDto;
 import com.eventwisp.app.entity.Organizer;
+import com.eventwisp.app.enums.UserRoles;
 import com.eventwisp.app.repository.OrganizerRepository;
 import com.eventwisp.app.service.OrganizerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class OrganizerServiceImpl implements OrganizerService {
@@ -23,10 +31,14 @@ public class OrganizerServiceImpl implements OrganizerService {
     //Create a 'OrganizerRepository' instance
     private OrganizerRepository organizerRepository;
 
+    private PasswordEncoder passwordEncoder;
+
     //Inject an instance of 'OrganizerRepository'
     @Autowired
-    public OrganizerServiceImpl(OrganizerRepository organizerRepository){
+    public OrganizerServiceImpl(OrganizerRepository organizerRepository,
+                                PasswordEncoder passwordEncoder){
         this.organizerRepository=organizerRepository;
+        this.passwordEncoder=passwordEncoder;
     }
 
     //create a new organizer
@@ -42,6 +54,7 @@ public class OrganizerServiceImpl implements OrganizerService {
         organizer.setPhone(createOrganizerDto.getPhone());
         organizer.setEmail(createOrganizerDto.getEmail());
         organizer.setPassword(createOrganizerDto.getPassword());
+        organizer.setUserRole(UserRoles.ORGANIZER);
 
         Organizer savedOrganizer=organizerRepository.save(organizer);
 
@@ -96,6 +109,17 @@ public class OrganizerServiceImpl implements OrganizerService {
         response.setMessage("Organizer details found");
 
         return response;
+    }
+
+    //check if organizer exists by email
+    @Override
+    public Boolean isExistsByEmail(String email) {
+        return organizerRepository.existsByEmail(email);
+    }
+
+    @Override
+    public Optional<Organizer> findOrganizerByEmail(String email) {
+        return organizerRepository.findByEmail(email);
     }
 
     //get organizer count
@@ -355,6 +379,7 @@ public class OrganizerServiceImpl implements OrganizerService {
         List<EarningDetails> detailsList = organizers.stream()
                 .map(o -> {
                     EarningDetails d = new EarningDetails();
+                    d.setId(o.getId());
                     d.setOrganizerId(o.getOrganizerId());
                     d.setOrganizerName(o.getFirstName() + " " + o.getLastName());
                     d.setTotalEarnings(o.getTotalEarnings());
@@ -372,23 +397,93 @@ public class OrganizerServiceImpl implements OrganizerService {
         return response;
     }
 
-    //Update an existing organizer
+    //update organizer password
     @Override
-    public Organizer updateOrganizer(Long id, OrganizerUpdateDto organizerUpdateDto) {
+    public UpdatePasswordResponse<Organizer> updateOrganizerPassword(Long id, UpdatePasswordDto passwordDto) {
+
+        UpdatePasswordResponse<Organizer> response=new UpdatePasswordResponse<>();
+
         //Find the existing organizer
         Organizer existingOrganizer=organizerRepository.findById(id).orElse(null);
 
         if(existingOrganizer==null){
-            return null;
+            response.setSuccess(false);
+            response.setMessage("Organizer not found");
+            return response;
         }
 
-        //Add new values
-        existingOrganizer.setCompanyName(organizerUpdateDto.getCompanyName());
-        existingOrganizer.setPhone(organizerUpdateDto.getPhone());
-        existingOrganizer.setEmail(organizerUpdateDto.getEmail());
-        existingOrganizer.setPassword(organizerUpdateDto.getPassword());
+        //check if the current password is correct
+        boolean isPasswordMatch = passwordEncoder.matches(
+                passwordDto.getCurrentPassword(),
+                existingOrganizer.getPassword()
+        );
 
-        return organizerRepository.save(existingOrganizer);
+        if (!isPasswordMatch) {
+            response.setSuccess(false);
+            response.setMessage("Current password is incorrect");
+            return response;
+        }
+
+        //encode password
+        String updatedPassword=passwordEncoder.encode(passwordDto.getNewPassword());
+
+        existingOrganizer.setPassword(updatedPassword);
+
+        Organizer updatedOrganizer= organizerRepository.save(existingOrganizer);
+
+        response.setSuccess(true);
+        response.setMessage("Organizer password updated");
+        response.setEntityData(updatedOrganizer);
+
+        return response;
+    }
+
+    //update organizer email
+    @Override
+    public SingleEntityResponse<Organizer> updateOrganizerEmail(Long id, UpdateEmailDto emailDto) {
+        SingleEntityResponse<Organizer> response = new SingleEntityResponse<>();
+
+        //Find the existing organizer
+        Organizer existingOrganizer = organizerRepository.findById(id).orElse(null);
+
+        if (existingOrganizer == null) {
+            response.setMessage("Organizer not found");
+            return response;
+        }
+
+        //update email
+        existingOrganizer.setEmail(emailDto.getEmail());
+
+        Organizer updatedOrganizer= organizerRepository.save(existingOrganizer);
+
+        response.setMessage("Organizer email updated");
+        response.setEntityData(updatedOrganizer);
+
+        return response;
+    }
+
+    //update organizer contact details
+    @Override
+    public SingleEntityResponse<Organizer> updateOrganizerContactDetails(Long id, UpdateContactDetailsDto contactDetailsDto) {
+        SingleEntityResponse<Organizer> response = new SingleEntityResponse<>();
+
+        //Find the existing organizer
+        Organizer existingOrganizer = organizerRepository.findById(id).orElse(null);
+
+        if (existingOrganizer == null) {
+            response.setMessage("Organizer not found");
+            return response;
+        }
+
+        //update contact details
+        existingOrganizer.setPhone(contactDetailsDto.getContactDetails());
+
+        Organizer updatedOrganizer= organizerRepository.save(existingOrganizer);
+
+        response.setMessage("Organizer contact details updated");
+        response.setEntityData(updatedOrganizer);
+
+        return response;
     }
 
     //update organizer status
@@ -429,15 +524,43 @@ public class OrganizerServiceImpl implements OrganizerService {
 
     //Update
     @Override
-    public Boolean deleteOrganizer(Long id) {
-        //Check if the organizer exists
-        boolean isExist=organizerRepository.existsById(id);
+    public DeleteAccountResponse deleteOrganizer(Long id, DeleteUserDto deleteUserDto) {
 
-        if(isExist){
-            organizerRepository.deleteById(id);
+        DeleteAccountResponse response = new DeleteAccountResponse();
 
-            return true;
+        // Find existing organizer
+        Organizer existingOrganizer = organizerRepository.findById(id).orElse(null);
+        if (existingOrganizer == null) {
+            response.setSuccess(false);
+            response.setMessage("Organizer not found");
+            return response;
         }
-        return false;
+
+        boolean isPasswordMatch = passwordEncoder.matches(
+                deleteUserDto.getPassword(),
+                existingOrganizer.getPassword()
+        );
+
+        //Verify password
+        if (!isPasswordMatch) {
+            response.setSuccess(false);
+            response.setMessage("Password is incorrect");
+            return response;
+        }
+
+        // Verify email
+        if (!java.util.Objects.equals(deleteUserDto.getEmail(), existingOrganizer.getEmail())) {
+            response.setSuccess(false);
+            response.setMessage("Incorrect email");
+            return response;
+        }
+
+        // Delete and respond
+        organizerRepository.deleteById(id);
+
+        response.setSuccess(true);
+        response.setMessage("Organizer deleted successfully");
+
+        return response;
     }
 }
