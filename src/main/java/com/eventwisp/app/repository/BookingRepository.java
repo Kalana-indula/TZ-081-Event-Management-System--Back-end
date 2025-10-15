@@ -14,4 +14,5 @@ public interface BookingRepository extends JpaRepository<Booking,Long> {
     @Query("SELECT b FROM Booking b WHERE b.event.id = :eventId")
     List<Booking> bookingsByEvent(Long eventId);
 
+    Booking findByBookingId(String  bookingId);
 }

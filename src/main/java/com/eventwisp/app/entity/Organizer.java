@@ -1,5 +1,6 @@
 package com.eventwisp.app.entity;
 
+import com.eventwisp.app.enums.UserRoles;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -44,6 +45,10 @@ public class Organizer {
 
     @Column(name = "password")
     private String password;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_role")
+    private UserRoles userRole=UserRoles.ORGANIZER;
 
     @Column(name = "pending_approval")
     private Boolean pendingApproval = true;

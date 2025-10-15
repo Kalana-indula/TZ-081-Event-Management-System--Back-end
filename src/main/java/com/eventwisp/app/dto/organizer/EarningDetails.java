@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 @Getter
 public class EarningDetails {
 
+    private Long id;
     private String organizerId;
     private String organizerName;
     private BigDecimal totalEarnings;

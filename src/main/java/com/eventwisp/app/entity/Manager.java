@@ -1,5 +1,6 @@
 package com.eventwisp.app.entity;
 
+import com.eventwisp.app.enums.UserRoles;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -34,6 +35,10 @@ public class Manager {
 
     @Column(name = "password")
     private String password;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_role")
+    private UserRoles userRole=UserRoles.MANAGER;
 
     @Column(name = "is_assigned")
     private Boolean isAssigned=false;

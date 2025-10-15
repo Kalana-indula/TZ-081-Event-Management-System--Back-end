@@ -1,8 +1,14 @@
 package com.eventwisp.app.controller;
 
-import com.eventwisp.app.dto.AdminUpdateDto;
+import com.eventwisp.app.dto.accountActions.DeleteUserDto;
+import com.eventwisp.app.dto.response.UpdatePasswordResponse;
+import com.eventwisp.app.dto.response.general.SingleEntityResponse;
+import com.eventwisp.app.dto.updateData.UpdateContactDetailsDto;
+import com.eventwisp.app.dto.updateData.UpdateEmailDto;
+import com.eventwisp.app.dto.updateData.UpdatePasswordDto;
 import com.eventwisp.app.entity.Admin;
 import com.eventwisp.app.service.AdminService;
+import com.eventwisp.app.service.impl.MailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,10 +25,13 @@ public class AdminController {
     //create an instance of 'AdminService'
     private AdminService adminService;
 
+    private MailService mailService;
+
     //Inject an 'AdminService'
     @Autowired
-    public AdminController(AdminService adminService){
+    public AdminController(AdminService adminService, MailService mailService){
         this.adminService=adminService;
+        this.mailService=mailService;
     }
 
     @PostMapping("/admins")
@@ -66,30 +75,56 @@ public class AdminController {
         }
     }
 
-    @PutMapping("/admins/{id}")
-    public ResponseEntity<?> updateAdmin(@PathVariable Long id,@RequestBody AdminUpdateDto adminUpdateDto){
+
+    @PutMapping("/admins/{id}/password")
+    public ResponseEntity<?> updateAdminPassword(@PathVariable Long id, @RequestBody UpdatePasswordDto passwordDto){
         try {
-            Admin updatedAdmin= adminService.updateAdmin(id,adminUpdateDto);
-            //Check if the admin available for entered id
-            if(updatedAdmin!=null){
-                return ResponseEntity.status(HttpStatus.OK).body(updatedAdmin);
+            UpdatePasswordResponse<Admin> response = adminService.updateAdminPassword(id,passwordDto);
+
+            if ("Current password is incorrect".equalsIgnoreCase(response.getMessage()) || "Admin not found".equalsIgnoreCase(response.getMessage())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
             }
 
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No admin found for entered id");
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+
+    @PutMapping("/admins/{id}/email")
+    public ResponseEntity<?> updateAdminEmail(@PathVariable Long id, @RequestBody UpdateEmailDto emailDto){
+        try {
+            SingleEntityResponse<Admin> response = adminService.updateAdminEmail(id,emailDto);
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/admins/{id}/contact")
+    public ResponseEntity<?> updateAdminContactDetails(@PathVariable Long id, @RequestBody UpdateContactDetailsDto contactDetailsDto){
+        try {
+            SingleEntityResponse<Admin> response = adminService.updateAdminContactDetails(id,contactDetailsDto);
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 
     @DeleteMapping("/admins/{id}")
-    public ResponseEntity<?> deleteAdmin(@PathVariable Long id){
+    public ResponseEntity<?> deleteAdmin(@PathVariable Long id, @RequestBody DeleteUserDto deleteUserDto){
         try {
-            Boolean isDeleted=adminService.deleteAdmin(id);
-            //Check if the admins is deleted
-            if(isDeleted){
-                return ResponseEntity.status(HttpStatus.OK).body("Admin deleted successfully");
-            }
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No admin found for entered id");
+            //get admin name
+            String adminName=adminService.findAdminById(id).getFirstName();
+
+            String isDeleted=adminService.deleteAdmin(id,deleteUserDto);
+
+            mailService.deleteAdminEmail(deleteUserDto.getEmail(),adminName);
+
+            return ResponseEntity.status(HttpStatus.OK).body(isDeleted);
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }

@@ -1,13 +1,21 @@
 package com.eventwisp.app.service.impl;
 
-import com.eventwisp.app.dto.AdminUpdateDto;
+import com.eventwisp.app.dto.accountActions.DeleteUserDto;
+import com.eventwisp.app.dto.response.UpdatePasswordResponse;
+import com.eventwisp.app.dto.response.general.SingleEntityResponse;
+import com.eventwisp.app.dto.updateData.UpdateContactDetailsDto;
+import com.eventwisp.app.dto.updateData.UpdateEmailDto;
+import com.eventwisp.app.dto.updateData.UpdatePasswordDto;
 import com.eventwisp.app.entity.Admin;
 import com.eventwisp.app.repository.AdminRepository;
 import com.eventwisp.app.service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Service
 public class AdminServiceImpl implements AdminService {
@@ -15,16 +23,23 @@ public class AdminServiceImpl implements AdminService {
     //get an instance of 'AdminRepository'
     private AdminRepository adminRepository;
 
+    private PasswordEncoder passwordEncoder;
+
     //inject 'AdminRepository'
     @Autowired
-    public AdminServiceImpl(AdminRepository adminRepository){
-        this.adminRepository=adminRepository;
+    public AdminServiceImpl(AdminRepository adminRepository,
+                            PasswordEncoder passwordEncoder) {
+        this.adminRepository = adminRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     //create a new 'Admin'
     @Override
-    public Admin createAdmin(Admin admin){
-        return adminRepository.save(admin);
+    public Admin createAdmin(Admin admin) {
+
+        Admin savedAdmin=adminRepository.save(admin);
+
+        return savedAdmin;
     }
 
     //find all available admins
@@ -33,69 +48,136 @@ public class AdminServiceImpl implements AdminService {
         return adminRepository.findAll();
     }
 
+    @Override
+    public Optional<Admin> findAdminByEmail(String email) {
+        return adminRepository.findByEmail(email);
+    }
+
+    @Override
+    public Boolean isExistsByEmail(String email) {
+        return adminRepository.existsByEmail(email);
+    }
+
     //Find an 'Admin' by id
     @Override
     public Admin findAdminById(Long id) {
         return adminRepository.findById(id).orElse(null);
     }
 
-//    Update an existing 'Admin'
+
     @Override
-    public Admin updateAdmin(Long id, AdminUpdateDto adminUpdateDto) {
+    public UpdatePasswordResponse<Admin> updateAdminPassword(Long id, UpdatePasswordDto passwordDto) {
+
+        UpdatePasswordResponse<Admin> response= new UpdatePasswordResponse<>();
 
         //Find existing 'Admin'
-        Admin existingAdmin=adminRepository.findById(id).orElse(null);
+        Admin existingAdmin = adminRepository.findById(id).orElse(null);
 
-        if(existingAdmin==null){
-            return null;
+        if (existingAdmin == null) {
+            response.setSuccess(false);
+            response.setMessage("Admin not found");
+            return response;
         }
 
-        //get current details
-        String currentPhone=existingAdmin.getPhone();
-        String currentEmail=existingAdmin.getEmail();
-        String currentPassword=existingAdmin.getPassword();
+        //check if the current password is correct
+        boolean isPasswordMatch = passwordEncoder.matches(
+                passwordDto.getCurrentPassword(),
+                existingAdmin.getPassword()
+        );
 
-        //check if the update dto has a new phone number
-        if(adminUpdateDto.getPhone()!=null){
-            //If true, set the new phone number
-            existingAdmin.setPhone(adminUpdateDto.getPhone());
-        }else{
-            //If false, set the existing number
-            existingAdmin.setPhone(currentPhone);
+        if (!isPasswordMatch) {
+            response.setSuccess(false);
+            response.setMessage("Current password is incorrect");
+            return response;
         }
 
-        //Check if the update dto has a new email
-        if(adminUpdateDto.getEmail()!=null){
-            //If true, set the new email
-            existingAdmin.setEmail(adminUpdateDto.getEmail());
-        }else{
-            //If false, set existing email
-            existingAdmin.setEmail(currentEmail);
+        String updatedPassword = passwordEncoder.encode(passwordDto.getNewPassword());
+
+        existingAdmin.setPassword(updatedPassword);
+
+        Admin updatedAdmin = adminRepository.save(existingAdmin);
+
+        response.setSuccess(true);
+        response.setMessage("Admin password updated successfully");
+        response.setEntityData(updatedAdmin);
+
+        return response;
+    }
+
+    @Override
+    public SingleEntityResponse<Admin> updateAdminEmail(Long id, UpdateEmailDto emailDto) {
+        SingleEntityResponse<Admin> response = new SingleEntityResponse<>();
+
+        //Find existing 'Admin'
+        Admin existingAdmin = adminRepository.findById(id).orElse(null);
+
+        if (existingAdmin == null) {
+            response.setMessage("Admin not found");
+            return response;
         }
 
-        //Check if the update dto has a new password
-        if(adminUpdateDto.getPassword()!=null){
-            //If true, set the new password
-            existingAdmin.setPassword(adminUpdateDto.getPassword());
-        }else{
-            //If false, set the existing password
-            existingAdmin.setPassword(currentPassword);
+        //update email
+        existingAdmin.setEmail(emailDto.getEmail());
+
+        Admin updatedAdmin = adminRepository.save(existingAdmin);
+
+        response.setMessage("Admin email updated successfully");
+        response.setEntityData(updatedAdmin);
+
+        return response;
+    }
+
+    @Override
+    public SingleEntityResponse<Admin> updateAdminContactDetails(Long id, UpdateContactDetailsDto contactDetailsDto) {
+        SingleEntityResponse<Admin> response = new SingleEntityResponse<>();
+
+        //Find existing 'Admin'
+        Admin existingAdmin = adminRepository.findById(id).orElse(null);
+
+        if (existingAdmin == null) {
+            response.setMessage("Admin not found");
+            return response;
         }
 
-        return adminRepository.save(existingAdmin);
+        //update contact details
+        existingAdmin.setPhone(contactDetailsDto.getContactDetails());
+
+        Admin updatedAdmin = adminRepository.save(existingAdmin);
+
+        response.setMessage("Admin contact details updated successfully");
+        response.setEntityData(updatedAdmin);
+
+        return response;
     }
 
     //delete an existing admin
     @Override
-    public Boolean deleteAdmin(Long id) {
-        //Check if the admin exist by id
-        if(adminRepository.existsById(id)){
-            //If true delete
-            adminRepository.deleteById(id);
+    public String deleteAdmin(Long id, DeleteUserDto deleteUserDto) {
 
-            return true;
+        Admin existingAdmin = adminRepository.findById(id).orElse(null);
+
+        if(existingAdmin == null) {
+            return "Admin not found";
         }
 
-        return false;
+        //check if the current password is correct
+        boolean isPasswordMatch = passwordEncoder.matches(
+                deleteUserDto.getPassword(),
+                existingAdmin.getPassword()
+        );
+
+
+        if(!isPasswordMatch){
+            return "Password is incorrect";
+        }
+
+        if(!Objects.equals(deleteUserDto.getEmail(), existingAdmin.getEmail())){
+            return "Incorrect email";
+        }
+
+        adminRepository.deleteById(id);
+
+        return "Admin deleted successfully";
     }
+
 }

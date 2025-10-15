@@ -1,17 +1,23 @@
 package com.eventwisp.app.service;
 
-import com.eventwisp.app.dto.OrganizerUpdateDto;
+import com.eventwisp.app.dto.accountActions.DeleteUserDto;
 import com.eventwisp.app.dto.organizer.CreateOrganizerDto;
 import com.eventwisp.app.dto.organizer.EarningDetails;
 import com.eventwisp.app.dto.organizer.OrganizerDetailsDto;
 import com.eventwisp.app.dto.organizer.OrganizerStatusDto;
+import com.eventwisp.app.dto.response.UpdatePasswordResponse;
+import com.eventwisp.app.dto.response.general.DeleteAccountResponse;
 import com.eventwisp.app.dto.response.general.MultipleEntityResponse;
 import com.eventwisp.app.dto.response.general.SingleEntityResponse;
 import com.eventwisp.app.dto.response.general.UpdateResponse;
+import com.eventwisp.app.dto.updateData.UpdateContactDetailsDto;
+import com.eventwisp.app.dto.updateData.UpdateEmailDto;
+import com.eventwisp.app.dto.updateData.UpdatePasswordDto;
 import com.eventwisp.app.entity.Organizer;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public interface OrganizerService {
@@ -20,6 +26,10 @@ public interface OrganizerService {
     List<Organizer> getAllOrganizers();
 
     MultipleEntityResponse<OrganizerDetailsDto> getAllOrganizersDetails();
+
+    Boolean isExistsByEmail(String email);
+
+    Optional<Organizer> findOrganizerByEmail(String email);
 
     Integer getOrganizerCount();
 
@@ -46,9 +56,13 @@ public interface OrganizerService {
     //get earnings by all organizers
     MultipleEntityResponse<EarningDetails> getEarningsByAllOrganizers();
 
-    Organizer updateOrganizer(Long id, OrganizerUpdateDto organizerUpdateDto);
+    UpdatePasswordResponse<Organizer> updateOrganizerPassword(Long id, UpdatePasswordDto passwordDto);
+
+    SingleEntityResponse<Organizer> updateOrganizerEmail(Long id, UpdateEmailDto emailDto);
+
+    SingleEntityResponse<Organizer> updateOrganizerContactDetails(Long id, UpdateContactDetailsDto contactDetailsDto);
 
     UpdateResponse<OrganizerDetailsDto> updateOrganizerStatus(Long id, OrganizerStatusDto organizerStatusDto);
 
-    Boolean deleteOrganizer(Long id);
+    DeleteAccountResponse deleteOrganizer(Long id, DeleteUserDto deleteUserDto);
 }
