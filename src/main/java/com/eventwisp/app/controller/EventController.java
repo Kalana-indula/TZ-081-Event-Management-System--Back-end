@@ -1,8 +1,8 @@
 package com.eventwisp.app.controller;
 
+import com.eventwisp.app.dto.EventDetailsDto;
 import com.eventwisp.app.dto.EventDto;
 import com.eventwisp.app.dto.EventUpdateDto;
-import com.eventwisp.app.dto.EventDetailsDto;
 import com.eventwisp.app.dto.event.EventCounts;
 import com.eventwisp.app.dto.event.EventStatusDto;
 import com.eventwisp.app.dto.response.EventCreateResponse;
@@ -13,6 +13,7 @@ import com.eventwisp.app.dto.response.general.SingleEntityResponse;
 import com.eventwisp.app.dto.response.general.UpdateResponse;
 import com.eventwisp.app.entity.Event;
 import com.eventwisp.app.service.EventService;
+import com.eventwisp.app.service.impl.MailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,10 +30,13 @@ public class EventController {
     //Create an instance of "EventService"
     private EventService eventService;
 
+    private MailService mailService;
+
     //Injecting an instance of "EventService"
     @Autowired
-    public EventController(EventService eventService){
+    public EventController(EventService eventService,MailService mailService){
         this.eventService=eventService;
+        this.mailService=mailService;
     }
 
     //Create a new event
@@ -46,6 +50,9 @@ public class EventController {
             if(response.getEvent()==null){
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response.getMessage());
             }
+
+            //send email
+            mailService.addEventEmail(response);
 
             return ResponseEntity.status(HttpStatus.OK).body(response);
         }catch (Exception e){
@@ -257,6 +264,9 @@ public class EventController {
             if(response.getUpdatedData()==null){
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response.getMessage());
             }
+
+            //send email
+            mailService.eventStatusUpdateEmail(response);
 
             return ResponseEntity.status(HttpStatus.OK).body(response);
         }catch (Exception e){

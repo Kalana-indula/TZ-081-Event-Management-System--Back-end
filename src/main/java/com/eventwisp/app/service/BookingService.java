@@ -4,6 +4,8 @@ import com.eventwisp.app.dto.BookingDto;
 import com.eventwisp.app.dto.booking.BookingDetailsDto;
 import com.eventwisp.app.dto.response.CreateBookingResponse;
 import com.eventwisp.app.dto.response.general.MultipleEntityResponse;
+import com.eventwisp.app.dto.response.general.SingleEntityResponse;
+import com.eventwisp.app.dto.ticket.TicketIssueDto;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -16,4 +18,6 @@ public interface BookingService {
 
     //Find all bookings by an event
     MultipleEntityResponse<BookingDetailsDto> findBookingsByEvent(Long eventId);
+
+    SingleEntityResponse<TicketIssueDto> issueTickets(String bookingId);
 }

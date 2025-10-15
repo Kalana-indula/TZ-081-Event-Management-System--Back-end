@@ -1,12 +1,12 @@
-package com.eventwisp.app.dto;
+package com.eventwisp.app.dto.accountActions;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Setter
 @Getter
-public class ManagerUpdateDto {
-    private String phone;
+public class DeleteUserDto {
     private String email;
     private String password;
 }
+

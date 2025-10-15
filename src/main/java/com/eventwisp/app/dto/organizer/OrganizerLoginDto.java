@@ -10,3 +10,4 @@ public class OrganizerLoginDto {
     private String email;
     private String password;
 }
+

@@ -1,9 +1,16 @@
 package com.eventwisp.app.controller;
 
 import com.eventwisp.app.dto.ManagerUpdateDto;
+import com.eventwisp.app.dto.accountActions.DeleteUserDto;
+import com.eventwisp.app.dto.response.UpdatePasswordResponse;
+import com.eventwisp.app.dto.response.general.SingleEntityResponse;
 import com.eventwisp.app.dto.response.general.UpdateResponse;
+import com.eventwisp.app.dto.updateData.UpdateContactDetailsDto;
+import com.eventwisp.app.dto.updateData.UpdateEmailDto;
+import com.eventwisp.app.dto.updateData.UpdatePasswordDto;
 import com.eventwisp.app.entity.Manager;
 import com.eventwisp.app.service.ManagerService;
+import com.eventwisp.app.service.impl.MailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,18 +25,13 @@ public class ManagerController {
 
     private ManagerService managerService;
 
-    @Autowired
-    public ManagerController(ManagerService managerService){
-        this.managerService=managerService;
-    }
+    private MailService mailService;
 
-    @PostMapping("/managers")
-    public ResponseEntity<?> createManager(@RequestBody Manager manager){
-        try {
-            return ResponseEntity.status(HttpStatus.OK).body(managerService.createManager(manager));
-        }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
+
+    @Autowired
+    public ManagerController(ManagerService managerService,MailService mailService){
+        this.managerService=managerService;
+        this.mailService=mailService;
     }
 
     //Find all managers
@@ -86,6 +88,7 @@ public class ManagerController {
     @PutMapping("/managers/{id}")
     public ResponseEntity<?> updateManager(@PathVariable Long id,@RequestBody ManagerUpdateDto managerUpdateDto){
         try {
+
             Manager updatedManager= managerService.updateManager(id,managerUpdateDto);
 
             //Check if the manager exists
@@ -98,6 +101,40 @@ public class ManagerController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+
+    @PutMapping("/managers/{id}/password")
+    public ResponseEntity<?> updateManagerPassword(@PathVariable Long id, @RequestBody UpdatePasswordDto passwordDto) {
+        try {
+            UpdatePasswordResponse<Manager> response = managerService.updateManagerPassword(id, passwordDto);
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/managers/{id}/email")
+    public ResponseEntity<?> updateManagerEmail(@PathVariable Long id, @RequestBody UpdateEmailDto emailDto) {
+        try {
+            SingleEntityResponse<Manager> response = managerService.updateManagerEmail(id, emailDto);
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/managers/{id}/contact")
+    public ResponseEntity<?> updateManagerContactDetails(@PathVariable Long id, @RequestBody UpdateContactDetailsDto contactDetailsDto) {
+        try {
+            SingleEntityResponse<Manager> response = managerService.updateManagerContactDetails(id, contactDetailsDto);
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
 
     //set manager status
     @PutMapping("/managers/{managerId}/update-status")
@@ -117,16 +154,17 @@ public class ManagerController {
 
     //Delete a manager
     @DeleteMapping("/managers/{id}")
-    public ResponseEntity<?> deleteManager(@PathVariable Long id){
+    public ResponseEntity<?> deleteManager(@PathVariable Long id,@RequestBody DeleteUserDto deleteUserDto){
         try {
-            boolean isDeleted= managerService.deleteManager(id);
+            //get manager name
+            String managerName=managerService.findManagerById(id).getFirstName();
 
-            //Check if deleted
-            if(!isDeleted){
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No manager found for entered id");
-            }
+            String isDeleted= managerService.deleteManager(id,deleteUserDto);
 
-            return ResponseEntity.status(HttpStatus.OK).body("Manager deleted successfully");
+            //send email
+            mailService.deleteManagerEmail(deleteUserDto.getEmail(),managerName);
+
+            return ResponseEntity.status(HttpStatus.OK).body(isDeleted);
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }

@@ -76,6 +76,12 @@ public class WebSecurityConfig {
                 .sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth->
                         auth.requestMatchers("/api/auth/**").permitAll()
+                                .requestMatchers("/api/categories").permitAll()
+                                .requestMatchers("/api/events/sessions/latest").permitAll()
+                                .requestMatchers("/api/events/**").permitAll()
+                                .requestMatchers("/api/sessions").permitAll()
+                                .requestMatchers("/api/sessions/**").permitAll()
+                                .requestMatchers("/api/bookings").permitAll()
                                 .anyRequest().authenticated());
 
         http.authenticationProvider(authenticationProvider());
