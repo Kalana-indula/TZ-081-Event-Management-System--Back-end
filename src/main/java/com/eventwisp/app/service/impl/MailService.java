@@ -1,11 +1,17 @@
 package com.eventwisp.app.service.impl;
 
+import com.eventwisp.app.dto.booking.BookingEmailDto;
 import com.eventwisp.app.dto.response.EventCreateResponse;
 import com.eventwisp.app.dto.response.general.UpdateResponse;
 import com.eventwisp.app.entity.Event;
+import jakarta.mail.internet.MimeMessage;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+
+import java.util.Base64;
 
 @Service
 public class MailService {
@@ -164,6 +170,57 @@ public class MailService {
 
 
         sendEmail(receiver, subject, message.toString());
+    }
+
+    // send booking confirmation email (HTML + inline QR)
+    public void bookingConfirmationEmail(BookingEmailDto payload) {
+        if (payload == null) {
+            throw new IllegalArgumentException("Payload is required");
+        }
+        String to = payload.getTo();
+        String bookingId = payload.getBookingId();
+        String qrBase64 = payload.getQrPngBase64();
+
+        if (to == null || to.isBlank()) {
+            throw new IllegalArgumentException("Recipient email is required");
+        }
+        if (bookingId == null || bookingId.isBlank()) {
+            throw new IllegalArgumentException("Booking ID is required");
+        }
+        if (qrBase64 == null || qrBase64.isBlank()) {
+            throw new IllegalArgumentException("QR image (base64) is required");
+        }
+
+        try {
+            byte[] qrBytes = Base64.getDecoder().decode(qrBase64);
+
+            MimeMessage mime = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mime, true, "UTF-8");
+
+            helper.setTo(to);
+            helper.setSubject("Your booking is confirmed — " + bookingId);
+
+            // Refined message: clear + friendly; conveys your requested meaning
+            String html = """
+                <p>Hi,</p>
+                <p>Your booking was successful. Please keep the QR code and Booking ID below to collect your tickets at the counter.</p>
+                <p><strong>Booking ID:</strong> %s</p>
+                <p><img src="cid:qrImage" alt="Booking QR" style="max-width:240px; height:auto;" /></p>
+                <p>Thank you for choosing Eventwisp.</p>
+                """.formatted(bookingId);
+
+            helper.setText(html, true);
+
+            // Inline QR image so it renders inside the email body
+            helper.addInline("qrImage", new ByteArrayResource(qrBytes), "image/png");
+
+            // (Optional) Also attach as a file:
+            // helper.addAttachment("booking-qr.png", new ByteArrayResource(qrBytes), "image/png");
+
+            mailSender.send(mime);
+        } catch (Exception ex) {
+            throw new RuntimeException("Failed to send booking confirmation email", ex);
+        }
     }
 
 }

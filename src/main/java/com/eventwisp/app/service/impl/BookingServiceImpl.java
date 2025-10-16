@@ -262,6 +262,34 @@ public class BookingServiceImpl implements BookingService {
         return response;
     }
 
+    //get booking details by id
+    @Override
+    public SingleEntityResponse<BookingDetailsDto> findBookingDetailsByBookingId(String bookingId) {
+
+        //find booking details
+        Booking existingBooking=bookingRepository.findByBookingId(bookingId);
+
+        BookingDetailsDto bookingDetailsDto=new BookingDetailsDto();
+
+        bookingDetailsDto.setBookingId(existingBooking.getBookingId());
+        bookingDetailsDto.setEventName(existingBooking.getEvent().getEventName());
+        bookingDetailsDto.setName(existingBooking.getFirstName() + " " + existingBooking.getLastName());
+        bookingDetailsDto.setEmail(existingBooking.getEmail());
+        bookingDetailsDto.setPhone(existingBooking.getPhone());
+        bookingDetailsDto.setNic(existingBooking.getIdNumber());
+        bookingDetailsDto.setTicketDetails(getBookedTicketDetails(existingBooking.getTickets()));
+        bookingDetailsDto.setTicketIssued(existingBooking.getTicketIssued());
+        bookingDetailsDto.setTicketIssuedDate(existingBooking.getTicketIssuedDate());
+        bookingDetailsDto.setTicketIssuedTime(existingBooking.getTicketIssuedTime());
+
+        SingleEntityResponse<BookingDetailsDto> response = new SingleEntityResponse<>();
+
+        response.setEntityData(bookingDetailsDto);
+        response.setMessage("Booking details");
+
+        return response;
+    }
+
     //issue ticket and get confirmed tickets are issued to the attendee at the counter
     @Override
     public SingleEntityResponse<TicketIssueDto> issueTickets(String bookingId) {

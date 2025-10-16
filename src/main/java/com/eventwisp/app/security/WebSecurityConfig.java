@@ -82,6 +82,7 @@ public class WebSecurityConfig {
                                 .requestMatchers("/api/sessions").permitAll()
                                 .requestMatchers("/api/sessions/**").permitAll()
                                 .requestMatchers("/api/bookings").permitAll()
+                                .requestMatchers("/api/emails/booking-confirmation").permitAll()
                                 .anyRequest().authenticated());
 
         http.authenticationProvider(authenticationProvider());

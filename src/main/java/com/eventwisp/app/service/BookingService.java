@@ -19,5 +19,7 @@ public interface BookingService {
     //Find all bookings by an event
     MultipleEntityResponse<BookingDetailsDto> findBookingsByEvent(Long eventId);
 
+    SingleEntityResponse<BookingDetailsDto> findBookingDetailsByBookingId(String bookingId);
+
     SingleEntityResponse<TicketIssueDto> issueTickets(String bookingId);
 }
