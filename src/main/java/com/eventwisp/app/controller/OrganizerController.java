@@ -269,6 +269,9 @@ public class OrganizerController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response.getMessage());
             }
 
+            //send email
+            mailService.organizerStatusUpdateEmail(response);
+
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());

@@ -33,6 +33,9 @@ public interface EventRepository extends JpaRepository<Event,Long> {
     @Query("SELECT DISTINCT YEAR(e.dateCompleted) FROM Event e WHERE e.organizer.id = :organizerId AND e.isCompleted = true")
     List<Integer> findEventCompletionYearsByOrganizer(@Param("organizerId") Long organizerId);
 
+    //find by event id
+    Event findByEventId(String eventId);
+
 
 }
 

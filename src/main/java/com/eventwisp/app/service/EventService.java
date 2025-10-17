@@ -36,6 +36,9 @@ public interface EventService {
 
     SingleEntityResponse<EventDetailsDto> getSingleEventById(Long eventId);
 
+    //find event by generated id string
+    SingleEntityResponse<EventDetailsDto> getSingleEventByEventId(String eventId);
+
     MultipleEntityResponse<EventDetailsDto> getEventsByStatus(Integer statusId);
 
     //get events by organizer

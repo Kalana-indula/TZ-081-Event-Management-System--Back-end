@@ -182,6 +182,29 @@ public class EventController {
         }
     }
 
+    //find events by generated id
+    @GetMapping("/search/events/{eventId}")
+    public ResponseEntity<?> searchEventById(@PathVariable String eventId) {
+        try {
+            // Call service to get event details by generated event ID (String)
+            SingleEntityResponse<EventDetailsDto> response = eventService.getSingleEventByEventId(eventId);
+
+            // Check if event details were found
+            if (response.getEntityData() == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response.getMessage());
+            }
+
+            // Return event details if found
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+
+        } catch (Exception e) {
+            // Handle unexpected errors gracefully
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred while fetching event details: " + e.getMessage());
+        }
+    }
+    
+
     //find events by category
     @GetMapping("/events/categories/{categoryName}")
     public ResponseEntity<?> findEventsByCategory(@PathVariable String categoryName) {

@@ -11,6 +11,7 @@ import java.time.LocalDate;
 public class EventDetailsDto {
 
     private Long eventId;
+    private String generatedId;
     private String eventName;
     private String eventType;
     private String organizer;

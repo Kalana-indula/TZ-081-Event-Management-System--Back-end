@@ -9,6 +9,7 @@ import java.time.LocalDate;
 @Getter
 public class OrganizerEventDetailsDto {
     private Long eventId;
+    private String generatedId;
     private String eventName;
     private LocalDate dateAdded;
     private LocalDate startingDate;

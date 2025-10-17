@@ -148,6 +148,7 @@ public class OrganizerServiceImpl implements OrganizerService {
         // Create the details DTO
         OrganizerDetailsDto details = new OrganizerDetailsDto();
         details.setId(organizer.getId());
+        details.setOrganizerId(organizer.getOrganizerId());
         details.setName(organizer.getFirstName() + " " + organizer.getLastName());
         details.setNic(organizer.getNic());
         details.setCompanyName(organizer.getCompanyName());
@@ -159,6 +160,7 @@ public class OrganizerServiceImpl implements OrganizerService {
         details.setTotalEarnings(organizer.getTotalEarnings());
         details.setTotalWithdrawals(organizer.getTotalWithdrawals());
         details.setCurrentBalance(organizer.getCurrentBalance());
+        details.setActiveEventsCount(organizer.getActiveEventsCount());
 
         // Set the response
         response.setMessage("Organizer details found");
@@ -179,6 +181,7 @@ public class OrganizerServiceImpl implements OrganizerService {
         }
 
         OrganizerDetailsDto details = new OrganizerDetailsDto();
+
         details.setId(organizer.getId());
         details.setOrganizerId(organizer.getOrganizerId());
         details.setName(organizer.getFirstName() + " " + organizer.getLastName());
@@ -192,6 +195,7 @@ public class OrganizerServiceImpl implements OrganizerService {
         details.setTotalEarnings(organizer.getTotalEarnings());
         details.setTotalWithdrawals(organizer.getTotalWithdrawals());
         details.setCurrentBalance(organizer.getCurrentBalance());
+        details.setActiveEventsCount(organizer.getActiveEventsCount());
 
         response.setMessage("Organizer details found");
         response.setEntityData(details);

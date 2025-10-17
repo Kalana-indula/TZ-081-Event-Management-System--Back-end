@@ -9,7 +9,9 @@ import com.eventwisp.app.dto.updateData.UpdateContactDetailsDto;
 import com.eventwisp.app.dto.updateData.UpdateEmailDto;
 import com.eventwisp.app.dto.updateData.UpdatePasswordDto;
 import com.eventwisp.app.entity.Manager;
+import com.eventwisp.app.entity.Organizer;
 import com.eventwisp.app.repository.ManagerRepository;
+import com.eventwisp.app.repository.OrganizerRepository;
 import com.eventwisp.app.service.ManagerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,13 +28,18 @@ public class ManagerServiceImpl implements ManagerService {
     //creating an instance of manager repository
     private ManagerRepository managerRepository;
 
+    private OrganizerRepository organizerRepository;
+
     private PasswordEncoder passwordEncoder;
 
     //injecting 'ManagerRepository'
     @Autowired
-    public ManagerServiceImpl(ManagerRepository managerRepository, PasswordEncoder passwordEncoder){
+    public ManagerServiceImpl(ManagerRepository managerRepository,
+                              PasswordEncoder passwordEncoder,
+                              OrganizerRepository organizerRepository){
         this.managerRepository=managerRepository;
         this.passwordEncoder=passwordEncoder;
+        this.organizerRepository=organizerRepository;
     }
 
     //Create a new manager
@@ -284,5 +291,34 @@ public class ManagerServiceImpl implements ManagerService {
         managerRepository.deleteById(id);
 
         return "Manager deleted successfully";
+    }
+
+    // remove organizer account from the system
+    @Override
+    public SingleEntityResponse<Boolean> removeOrganizerAccount(Long organizerId) {
+
+        SingleEntityResponse<Boolean> response=new SingleEntityResponse<>();
+
+        //find the corresponding organizer
+        Organizer existingOrganizer=organizerRepository.findById(organizerId).orElse(null);
+
+        if(existingOrganizer==null){
+            response.setMessage("Organizer not found");
+            response.setEntityData(false);
+            return response;
+        }
+
+        //check if the organizer has active events
+        if(existingOrganizer.getActiveEventsCount()!=0){
+            response.setMessage("Organizer already has active events");
+            response.setEntityData(false);
+            return response;
+        }else{
+            organizerRepository.deleteById(organizerId);
+
+            response.setMessage("Organizer deleted successfully");
+            response.setEntityData(true);
+            return response;
+        }
     }
 }

@@ -40,4 +40,6 @@ public interface ManagerService {
     UpdateResponse<Manager> setManagerStatus(Long id);
 
     String deleteManager(Long id, DeleteUserDto deleteUserDto);
+
+    SingleEntityResponse<Boolean> removeOrganizerAccount(Long id);
 }
