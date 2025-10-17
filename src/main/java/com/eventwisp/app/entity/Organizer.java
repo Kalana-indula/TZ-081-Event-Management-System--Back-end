@@ -68,6 +68,9 @@ public class Organizer {
     @Column(name = "current_balance")
     private BigDecimal currentBalance = BigDecimal.ZERO;
 
+    @Column(name = "active_event_count")
+    private Integer activeEventsCount=0;
+
     @JsonIgnore
     @OneToOne(mappedBy = "organizer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Bank bank;

@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,6 +41,8 @@ public class EventServiceImpl implements EventService {
 
     private MonthlyEarningRepository monthlyEarningRepository;
 
+    private EventSequenceRepository eventSequenceRepository;
+
     @Autowired
     public EventServiceImpl(EventRepository eventRepository,
                             EventCategoryRepository eventCategoryRepository,
@@ -47,7 +50,8 @@ public class EventServiceImpl implements EventService {
                             OrganizerRepository organizerRepository,
                             EventStatusRepository eventStatusRepository,
                             FinancialDataRepository financialDataRepository,
-                            MonthlyEarningRepository monthlyEarningRepository) {
+                            MonthlyEarningRepository monthlyEarningRepository,
+                            EventSequenceRepository eventSequenceRepository) {
         this.eventRepository = eventRepository;
         this.eventCategoryRepository = eventCategoryRepository;
         this.ticketRepository = ticketRepository;
@@ -55,6 +59,7 @@ public class EventServiceImpl implements EventService {
         this.eventStatusRepository = eventStatusRepository;
         this.financialDataRepository = financialDataRepository;
         this.monthlyEarningRepository = monthlyEarningRepository;
+        this.eventSequenceRepository = eventSequenceRepository;
     }
 
     //Create a new event
@@ -89,6 +94,7 @@ public class EventServiceImpl implements EventService {
         //Create new 'Event' object
         Event event = new Event();
 
+        event.setEventId(generateEventId());
         event.setEventName(eventDto.getEventName());
         event.setStartingDate(eventDto.getStartingDate());
         event.setDateAdded(LocalDate.now());
@@ -150,6 +156,7 @@ public class EventServiceImpl implements EventService {
             EventDetailsDto eventDetails = new EventDetailsDto();
 
             eventDetails.setEventId(event.getId());
+            eventDetails.setGeneratedId(event.getEventId());
             eventDetails.setEventName(event.getEventName());
             eventDetails.setEventType(event.getEventCategory().getCategory());
             eventDetails.setOrganizer(event.getOrganizer().getFirstName() + " " + event.getOrganizer().getLastName());
@@ -274,6 +281,48 @@ public class EventServiceImpl implements EventService {
         return response;
     }
 
+    @Override
+    public SingleEntityResponse<EventDetailsDto> getSingleEventByEventId(String eventId) {
+
+        SingleEntityResponse<EventDetailsDto> response = new SingleEntityResponse<>();
+
+        Event existingEvent = eventRepository.findByEventId(eventId);
+
+        if (existingEvent == null) {
+            response.setMessage("Event not found");
+            return response;
+        }
+
+        EventDetailsDto eventDetails = new EventDetailsDto();
+
+        eventDetails.setEventId(existingEvent.getId());
+        eventDetails.setGeneratedId(existingEvent.getEventId());
+        eventDetails.setEventName(existingEvent.getEventName());
+        eventDetails.setEventType(existingEvent.getEventCategory().getCategory());
+        eventDetails.setOrganizer(existingEvent.getOrganizer().getFirstName() + " " + existingEvent.getOrganizer().getLastName());
+        eventDetails.setOrganizerId(existingEvent.getOrganizer().getId());
+        eventDetails.setDateAdded(existingEvent.getDateAdded());
+        eventDetails.setStartingDate(existingEvent.getStartingDate());
+        eventDetails.setDateCompleted(existingEvent.getDateCompleted());
+        eventDetails.setCoverImageLink(existingEvent.getCoverImageLink());
+        eventDetails.setEventDescription(existingEvent.getDescription());
+        eventDetails.setIsApproved(existingEvent.getIsApproved());
+        eventDetails.setIsStarted(existingEvent.getIsStarted());
+        eventDetails.setIsCompleted(existingEvent.getIsCompleted());
+        eventDetails.setIsPublished(existingEvent.getIsPublished());
+        eventDetails.setIsDisapproved(existingEvent.getIsDisapproved());
+        eventDetails.setStatus(existingEvent.getEventStatus().getStatusName());
+        eventDetails.setCommission(existingEvent.getCommission());
+        eventDetails.setTotalAttendeesCount(existingEvent.getTotalAttendeesCount());
+        eventDetails.setEarningsByEvent(existingEvent.getEarningsByEvent());
+        eventDetails.setTotalProfit(existingEvent.getTotalProfit());
+
+        response.setMessage("Event details fetched successfully");
+        response.setEntityData(eventDetails);
+
+        return response;
+    }
+
 
     @Override
     public MultipleEntityResponse<EventDetailsDto> getEventsByStatus(Integer statusId) {
@@ -303,6 +352,7 @@ public class EventServiceImpl implements EventService {
             EventDetailsDto eventDetails = new EventDetailsDto();
 
             eventDetails.setEventId(event.getId());
+            eventDetails.setGeneratedId(event.getEventId());
             eventDetails.setEventName(event.getEventName());
             eventDetails.setEventType(event.getEventCategory().getCategory());
             eventDetails.setOrganizer(event.getOrganizer().getFirstName() + " " + event.getOrganizer().getLastName());
@@ -562,6 +612,7 @@ public class EventServiceImpl implements EventService {
             existingEvent.setDateCompleted(LocalDate.now());
         }
 
+
         Event savedEvent= eventRepository.save(existingEvent);
 
         //check if the event is completed
@@ -642,6 +693,16 @@ public class EventServiceImpl implements EventService {
             financialDataRepository.save(currentData.get(0));
         }
 
+        //find organizer
+        Organizer organizer=savedEvent.getOrganizer();
+
+        int updatedEventCount=getActiveEventCountFromOrganizer(organizer,eventStatusDto);
+
+        organizer.setActiveEventsCount(updatedEventCount);
+
+        //save organizer with updated values
+        organizerRepository.save(organizer);
+
         response.setMessage("Event updated successfully");
         response.setUpdatedData(savedEvent);
 
@@ -685,6 +746,52 @@ public class EventServiceImpl implements EventService {
         response.setEntityList(yearsList);
 
         return response;
+    }
+
+    private int getActiveEventCountFromOrganizer(Organizer organizer, EventStatusDto dto) {
+        int current = organizer.getActiveEventsCount() == null ? 0 : organizer.getActiveEventsCount();
+
+        // APPROVE: +1  (only when it's the plain "approved" state)
+        boolean approveState =
+                Boolean.TRUE.equals(dto.getIsApproved()) &&
+                        !Boolean.TRUE.equals(dto.getIsDisapproved()) &&
+                        !Boolean.TRUE.equals(dto.getIsStarted()) &&
+                        !Boolean.TRUE.equals(dto.getIsCompleted()) &&
+                        !Boolean.TRUE.equals(dto.getIsPublic());
+
+        if (approveState) {
+            return current + 1;
+        }
+
+        // COMPLETE: -1 (but never below 0)
+        if (Boolean.TRUE.equals(dto.getIsCompleted())) {
+            return Math.max(0, current - 1);
+        }
+
+        // PUBLISH / START / DISAPPROVE: no change
+        return current;
+    }
+
+    //generate event id
+    private String generateEventId(){
+        LocalDate today = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        String datePrefix = "EVT" + today.format(formatter);
+
+        EventSequenceTracker tracker = eventSequenceRepository.findById(today.toString())
+                .orElseGet(() -> {
+                    EventSequenceTracker newTracker=new EventSequenceTracker();
+                    newTracker.setDate(today.toString());
+                    newTracker.setSequence(0L);
+                    return eventSequenceRepository.save(newTracker);
+                });
+
+        synchronized (this) {
+            long sequence = tracker.getSequence() + 1;
+            tracker.setSequence(sequence);
+            eventSequenceRepository.save(tracker);
+            return datePrefix + "-" + String.format("%03d", sequence);
+        }
     }
 
 }

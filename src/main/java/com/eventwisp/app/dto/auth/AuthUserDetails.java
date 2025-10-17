@@ -10,4 +10,5 @@ public class AuthUserDetails {
     private Long userId;
     private String userName="";
     private String userRole="";
+    private Boolean isApproved;
 }

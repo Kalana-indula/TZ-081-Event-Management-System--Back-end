@@ -10,12 +10,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -48,9 +50,9 @@ public class ManagerAuthController {
 
     //register manager
     @PostMapping("/managers")
-    public ResponseEntity<?> registerManager(@RequestBody Manager manager){
+    public ResponseEntity<?> registerManager(@RequestBody Manager manager) {
 
-        if (managerService.isExistsByEmail(manager.getEmail())){
+        if (managerService.isExistsByEmail(manager.getEmail())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email Already Exists");
         }
 
@@ -58,37 +60,44 @@ public class ManagerAuthController {
         manager.setPassword(passwordEncoder.encode(manager.getPassword()));
 
         //save
-        Manager savedManager=managerService.createManager(manager);
+        Manager savedManager = managerService.createManager(manager);
 
         //send email
-        mailService.registerManagerEmail(savedManager.getEmail(),savedManager.getFirstName());
+        mailService.registerManagerEmail(savedManager.getEmail(), savedManager.getFirstName());
 
         return ResponseEntity.status(HttpStatus.OK).body(managerService.createManager(savedManager));
     }
 
     //login as organizer
     @PostMapping("/managers/login")
-    public ResponseEntity<?> loginAsOrganizer(@RequestBody ManagerLoginDto managerLoginDto){
-        //authenticate the user
-        Authentication authentication=authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(managerLoginDto.getEmail(), managerLoginDto.getPassword()));
+    public ResponseEntity<?> loginAsOrganizer(@RequestBody ManagerLoginDto managerLoginDto) {
 
-        //set the user as authenticated
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        try {
+            //authenticate the user
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(managerLoginDto.getEmail(), managerLoginDto.getPassword()));
 
-        //generate token
-        String jwt = jwtUtils.generateJwtToken(authentication);
+            //set the user as authenticated
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        //find manager
-        Optional<Manager> existingManager =managerService.findByEmail(managerLoginDto.getEmail());
+            //generate token
+            String jwt = jwtUtils.generateJwtToken(authentication);
 
-        AuthUserDetails userDetails=new AuthUserDetails();
+            //find manager
+            Optional<Manager> existingManager = managerService.findByEmail(managerLoginDto.getEmail());
 
-        userDetails.setAuthToken(jwt);
-        userDetails.setUserId(existingManager.get().getId());
-        userDetails.setUserName(existingManager.get().getFirstName());
-        userDetails.setUserRole(String.valueOf(existingManager.get().getUserRole()));
+            AuthUserDetails userDetails = new AuthUserDetails();
 
-        return ResponseEntity.status(HttpStatus.OK).body(userDetails);
+            userDetails.setAuthToken(jwt);
+            userDetails.setUserId(existingManager.get().getId());
+            userDetails.setUserName(existingManager.get().getFirstName());
+            userDetails.setUserRole(String.valueOf(existingManager.get().getUserRole()));
+
+            return ResponseEntity.status(HttpStatus.OK).body(userDetails);
+        } catch (BadCredentialsException ex) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Invalid email or password"));
+        }
+
     }
 }

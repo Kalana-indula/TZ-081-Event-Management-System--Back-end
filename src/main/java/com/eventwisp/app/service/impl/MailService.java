@@ -1,6 +1,7 @@
 package com.eventwisp.app.service.impl;
 
 import com.eventwisp.app.dto.booking.BookingEmailDto;
+import com.eventwisp.app.dto.organizer.OrganizerDetailsDto;
 import com.eventwisp.app.dto.response.EventCreateResponse;
 import com.eventwisp.app.dto.response.general.UpdateResponse;
 import com.eventwisp.app.entity.Event;
@@ -74,16 +75,20 @@ public class MailService {
         sendEmail(receiver,subject,message);
     }
 
-    //Register an organizer email
-    public void registerOrganizerEmail(String to,String name){
-        String subject="Organizer Account Registered Successfully";
+    // Register an organizer email
+    public void registerOrganizerEmail(String to, String name) {
+        String subject = "Organizer Registration Request Received";
+        String receiver = to;
 
-        String receiver=to;
+        String message =
+                "Dear " + name + ",\n\n" +
+                        "Thank you for registering as an organizer on Eventwisp.\n\n" +
+                        "We’ve successfully received your registration request. Our team will review your details and let you know once your account has been activated.\n\n" +
+                        "Best regards,\nEventwisp team";
 
-        String message="Dear "+name+" ,\n\n You are now an organizer of Eventwisp. \n\n Best regards, \n Eventwisp team";
-
-        sendEmail(receiver,subject,message);
+        sendEmail(receiver, subject, message);
     }
+
 
     //Delete organizer email
     public void deleteOrganizerEmail(String to,String name){
@@ -95,6 +100,53 @@ public class MailService {
 
         sendEmail(receiver,subject,message);
     }
+
+    // approve/disapprove organizer email
+    public void organizerStatusUpdateEmail(UpdateResponse<OrganizerDetailsDto> response) {
+        if (response == null || response.getUpdatedData() == null) return;
+
+        OrganizerDetailsDto dto = response.getUpdatedData();
+        String to = dto.getEmail();
+        if (to == null || to.isBlank()) return;
+
+        // extract first name safely
+        String fullName = dto.getName();
+        String firstName = (fullName != null && !fullName.isBlank())
+                ? fullName.split(" ")[0]
+                : "Organizer";
+
+        boolean approved = Boolean.TRUE.equals(dto.getIsApproved());
+        boolean disapproved = Boolean.TRUE.equals(dto.getIsDisapproved());
+
+        // If state is inconsistent or not final, skip sending
+        if ((approved && disapproved) || (!approved && !disapproved)) return;
+
+        if (approved) {
+            String subject = "Your Organizer Account Has Been Approved";
+            String message =
+                    "Dear " + firstName + ",\n\n" +
+                            "Great news! Your organizer account on Eventwisp has been approved.\n\n" +
+                            "You can now sign in, create events, manage tickets, and track performance from your dashboard.\n\n" +
+                            "Cheers,\nEventwisp team";
+            sendEmail(to, subject, message);
+            return;
+        }
+
+        if (disapproved) {
+            String subject = "Organizer Account Status — Not Approved";
+            String reason = response.getMessage();
+            StringBuilder msg = new StringBuilder()
+                    .append("Dear ").append(firstName).append(",\n\n")
+                    .append("We’re sorry—your organizer account was not approved at this time.\n");
+            if (reason != null && !reason.isBlank()) {
+                msg.append("\nReason: ").append(reason).append("\n");
+            }
+            msg.append("\nYou’re welcome to update your details and reapply.\n\n")
+                    .append("Best regards,\nEventwisp team");
+            sendEmail(to, subject, msg.toString());
+        }
+    }
+
 
     //Add event email
     public void addEventEmail(EventCreateResponse response){

@@ -21,4 +21,5 @@ public class OrganizerDetailsDto {
     private BigDecimal totalEarnings;
     private BigDecimal totalWithdrawals;
     private BigDecimal currentBalance;
+    private Integer activeEventsCount;
 }

@@ -29,7 +29,8 @@ public class ManagerController {
 
 
     @Autowired
-    public ManagerController(ManagerService managerService,MailService mailService){
+    public ManagerController(ManagerService managerService,
+                             MailService mailService){
         this.managerService=managerService;
         this.mailService=mailService;
     }
@@ -147,6 +148,19 @@ public class ManagerController {
             }
 
             return ResponseEntity.status(HttpStatus.OK).body(managerUpdateResponse);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    //delete organizer from the system
+    @DeleteMapping("/managers/actions/organizers/{organizerId}/delete")
+    public ResponseEntity<?> deleteOrganizerFromSystem(@PathVariable Long organizerId){
+        try{
+            SingleEntityResponse<Boolean> response=managerService.removeOrganizerAccount(organizerId);
+
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }

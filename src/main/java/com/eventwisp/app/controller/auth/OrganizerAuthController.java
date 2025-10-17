@@ -11,12 +11,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -39,7 +41,7 @@ public class OrganizerAuthController {
                                    PasswordEncoder passwordEncoder,
                                    AuthenticationManager authenticationManager,
                                    JwtUtils jwtUtils,
-                                   MailService mailService){
+                                   MailService mailService) {
         this.organizerService = organizerService;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
@@ -49,9 +51,9 @@ public class OrganizerAuthController {
 
     //register organizer
     @PostMapping("/organizers")
-    public ResponseEntity<?> registerOrganizer(@RequestBody CreateOrganizerDto createOrganizerDto){
+    public ResponseEntity<?> registerOrganizer(@RequestBody CreateOrganizerDto createOrganizerDto) {
 
-        if (organizerService.isExistsByEmail(createOrganizerDto.getEmail())){
+        if (organizerService.isExistsByEmail(createOrganizerDto.getEmail())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email Already Exists");
         }
 
@@ -59,38 +61,44 @@ public class OrganizerAuthController {
         createOrganizerDto.setPassword(passwordEncoder.encode(createOrganizerDto.getPassword()));
 
         //save
-        Organizer savedOrganizer=organizerService.addOrganizer(createOrganizerDto);
+        Organizer savedOrganizer = organizerService.addOrganizer(createOrganizerDto);
 
         //send email
-        mailService.registerOrganizerEmail(savedOrganizer.getEmail(),savedOrganizer.getFirstName());
+        mailService.registerOrganizerEmail(savedOrganizer.getEmail(), savedOrganizer.getFirstName());
 
         return ResponseEntity.status(HttpStatus.OK).body(savedOrganizer);
     }
 
     //login as organizer
     @PostMapping("/organizers/login")
-    public ResponseEntity<?> loginAsOrganizer(@RequestBody OrganizerLoginDto organizerLoginDto){
-        //authenticate the user
-        Authentication authentication=authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(organizerLoginDto.getEmail(), organizerLoginDto.getPassword()));
+    public ResponseEntity<?> loginAsOrganizer(@RequestBody OrganizerLoginDto organizerLoginDto) {
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            organizerLoginDto.getEmail(),
+                            organizerLoginDto.getPassword()
+                    )
+            );
 
-        //set the user as authenticated
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String jwt = jwtUtils.generateJwtToken(authentication);
 
-        //generate token
-        String jwt = jwtUtils.generateJwtToken(authentication);
+            Optional<Organizer> existingOrganizer = organizerService.findOrganizerByEmail(organizerLoginDto.getEmail());
 
-        //find organizer
-        Optional<Organizer> existingOrganizer=organizerService.findOrganizerByEmail(organizerLoginDto.getEmail());
+            AuthUserDetails userDetails = new AuthUserDetails();
+            userDetails.setAuthToken(jwt);
+            userDetails.setUserId(existingOrganizer.get().getId());
+            userDetails.setUserName(existingOrganizer.get().getFirstName());
+            userDetails.setUserRole(String.valueOf(existingOrganizer.get().getUserRole()));
+            userDetails.setIsApproved(existingOrganizer.get().getIsApproved());
 
-        AuthUserDetails userDetails=new AuthUserDetails();
+            return ResponseEntity.ok(userDetails);
 
-        userDetails.setAuthToken(jwt);
-        userDetails.setUserId(existingOrganizer.get().getId());
-        userDetails.setUserName(existingOrganizer.get().getFirstName());
-        userDetails.setUserRole(String.valueOf(existingOrganizer.get().getUserRole()));
-
-        return ResponseEntity.status(HttpStatus.OK).body(userDetails);
+        } catch (BadCredentialsException ex) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Invalid email or password"));
+        }
     }
+
 
 }
