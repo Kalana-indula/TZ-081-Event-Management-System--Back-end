@@ -4,6 +4,7 @@ import com.eventwisp.app.dto.booking.BookingEmailDto;
 import com.eventwisp.app.dto.organizer.OrganizerDetailsDto;
 import com.eventwisp.app.dto.response.EventCreateResponse;
 import com.eventwisp.app.dto.response.general.UpdateResponse;
+import com.eventwisp.app.entity.Booking;
 import com.eventwisp.app.entity.Event;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.core.io.ByteArrayResource;
@@ -273,6 +274,52 @@ public class MailService {
         } catch (Exception ex) {
             throw new RuntimeException("Failed to send booking confirmation email", ex);
         }
+    }
+
+    // send ticket issuance confirmation email
+    public void ticketIssueConfirmationEmail(Booking booking) {
+        if (booking == null) return;
+
+        String to = booking.getEmail();
+        if (to == null || to.isBlank()) return;
+
+        String firstName = (booking.getFirstName() != null && !booking.getFirstName().isBlank())
+                ? booking.getFirstName()
+                : "Attendee";
+
+        Event event = booking.getEvent();
+        String eventName = (event != null && event.getEventName() != null && !event.getEventName().isBlank())
+                ? event.getEventName()
+                : "your event";
+
+        String bookingId = booking.getBookingId() != null ? booking.getBookingId() : "-";
+        Integer ticketCount = booking.getTicketCount(); // may be null
+        String issuedDate = booking.getTicketIssuedDate() != null ? booking.getTicketIssuedDate().toString() : null;
+        String issuedTime = booking.getTicketIssuedTime() != null ? booking.getTicketIssuedTime().toString() : null;
+
+        String subject = "Tickets issued — " + eventName;
+
+        StringBuilder body = new StringBuilder()
+                .append("Dear ").append(firstName).append(",\n\n")
+                .append("Great news! Your tickets for \"").append(eventName).append("\" have been issued successfully.\n\n")
+                .append("Booking ID: ").append(bookingId).append("\n");
+
+        if (ticketCount != null) {
+            body.append("Ticket count: ").append(ticketCount).append("\n");
+        }
+        if (issuedDate != null || issuedTime != null) {
+            body.append("Issued on: ")
+                    .append(issuedDate != null ? issuedDate : "")
+                    .append(issuedDate != null && issuedTime != null ? " " : "")
+                    .append(issuedTime != null ? issuedTime : "")
+                    .append("\n");
+        }
+
+        body.append("\nPlease keep this Booking ID handy. If QR tickets were provided separately, bring them (printed or on your phone) to the entrance for faster check-in.\n\n")
+                .append("Have an amazing time,\n")
+                .append("Eventwisp team");
+
+        sendEmail(to, subject, body.toString());
     }
 
 }

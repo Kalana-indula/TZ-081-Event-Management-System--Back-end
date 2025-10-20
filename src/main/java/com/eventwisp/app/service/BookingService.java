@@ -8,6 +8,8 @@ import com.eventwisp.app.dto.response.general.SingleEntityResponse;
 import com.eventwisp.app.dto.ticket.TicketIssueDto;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public interface BookingService {
     //create a booking
@@ -22,4 +24,7 @@ public interface BookingService {
     SingleEntityResponse<BookingDetailsDto> findBookingDetailsByBookingId(String bookingId);
 
     SingleEntityResponse<TicketIssueDto> issueTickets(String bookingId);
+
+    //add a calculator
+    Long calculateExpectedAmountInCents(Long sessionId, List<Long> ticketIdList);
 }
