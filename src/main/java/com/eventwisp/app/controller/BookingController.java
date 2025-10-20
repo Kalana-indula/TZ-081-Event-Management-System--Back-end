@@ -3,12 +3,14 @@ package com.eventwisp.app.controller;
 import com.eventwisp.app.dto.BookingDto;
 import com.eventwisp.app.dto.booking.BookingDetailsDto;
 import com.eventwisp.app.dto.booking.BookingEmailDto;
+import com.eventwisp.app.dto.booking.BookingWithPaymentDto;
 import com.eventwisp.app.dto.response.CreateBookingResponse;
 import com.eventwisp.app.dto.response.general.MultipleEntityResponse;
 import com.eventwisp.app.dto.response.general.SingleEntityResponse;
 import com.eventwisp.app.dto.ticket.TicketIssueDto;
 import com.eventwisp.app.service.BookingService;
 import com.eventwisp.app.service.impl.MailService;
+import com.stripe.model.PaymentIntent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,8 +35,34 @@ public class BookingController {
 
     //create a new booking
     @PostMapping("/bookings")
-    public ResponseEntity<?> createBooking(@RequestBody BookingDto bookingDto) {
+    public ResponseEntity<?> createBooking(@RequestBody BookingWithPaymentDto req) {
         try {
+
+            //calculate expected amount from tickets
+            long expectedAmount = bookingService.calculateExpectedAmountInCents(
+                    req.getSessionId(), req.getTicketIdList());
+
+            //retrieve and verify payment intent
+            PaymentIntent paymentIntent=PaymentIntent.retrieve(req.getPaymentIntentId());
+
+            if (!"succeeded".equals(paymentIntent.getStatus())) {
+                return ResponseEntity.status(402).body("Payment not completed.");
+            }
+
+            if (paymentIntent.getAmount() == null || paymentIntent.getAmount() != expectedAmount) {
+                return ResponseEntity.status(400).body("Amount mismatch.");
+            }
+
+            //create booking and booking dto
+            BookingDto bookingDto=new BookingDto();
+            bookingDto.setFirstName(req.getFirstName());
+            bookingDto.setLastName(req.getLastName());
+            bookingDto.setEmail(req.getEmail());
+            bookingDto.setPhone(req.getPhone());
+            bookingDto.setIdNumber(req.getIdNumber());
+            bookingDto.setSessionId(req.getSessionId());
+            bookingDto.setTicketIdList(req.getTicketIdList());
+
             CreateBookingResponse response = bookingService.createBooking(bookingDto);
 
             if (response.getBookingDetails() == null) {

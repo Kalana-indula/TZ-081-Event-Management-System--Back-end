@@ -32,6 +32,7 @@ public class BookingServiceImpl implements BookingService {
     private BookingSequenceRepository bookingSequenceRepository;
     private OrganizerRepository organizerRepository;
     private SessionTicketRepository sessionTicketRepository;
+    private MailService mailService;
 
     //Inject repositories
     @Autowired
@@ -41,7 +42,8 @@ public class BookingServiceImpl implements BookingService {
                               SessionRepository sessionRepository,
                               BookingSequenceRepository bookingSequenceRepository,
                               OrganizerRepository organizerRepository,
-                              SessionTicketRepository sessionTicketRepository) {
+                              SessionTicketRepository sessionTicketRepository,
+                              MailService mailService) {
         this.bookingRepository = bookingRepository;
         this.eventRepository = eventRepository;
         this.ticketRepository = ticketRepository;
@@ -49,6 +51,7 @@ public class BookingServiceImpl implements BookingService {
         this.bookingSequenceRepository = bookingSequenceRepository;
         this.organizerRepository = organizerRepository;
         this.sessionTicketRepository = sessionTicketRepository;
+        this.mailService = mailService;
     }
 
     @Override
@@ -306,6 +309,9 @@ public class BookingServiceImpl implements BookingService {
         //save updated booking
         Booking updatedBooking = bookingRepository.save(existingBooking);
 
+        //send email
+        mailService.ticketIssueConfirmationEmail(updatedBooking);
+
         //get ticket issuance log
         TicketIssueDto ticketIssueDto = new TicketIssueDto();
 
@@ -319,6 +325,23 @@ public class BookingServiceImpl implements BookingService {
         response.setMessage("Ticket issued successfully for booking id: " + updatedBooking.getBookingId());
 
         return response;
+    }
+
+    @Override
+    public Long calculateExpectedAmountInCents(Long sessionId, List<Long> ticketIdList) {
+
+        Session session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid session"));
+
+        double total = 0.0;
+
+        for (Long id : ticketIdList) {
+            Ticket t = ticketRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid ticket " + id));
+            total += t.getPrice();
+        }
+
+        return Math.max(1, Math.round(total * 100));
     }
 
 
