@@ -212,6 +212,7 @@ public class OrganizerServiceImpl implements OrganizerService {
         List<Organizer> pendingAccounts=organizerRepository.pendingOrganizers();
 
         if(pendingAccounts.isEmpty()){
+            response.setRemarks("0");
             response.setMessage("No pending organizer found");
             return response;
         }
@@ -234,6 +235,7 @@ public class OrganizerServiceImpl implements OrganizerService {
         }
         
         response.setEntityList(organizersDetails);
+        response.setRemarks(String.valueOf(pendingAccounts.size()));
         response.setMessage("Organizer details found");
 
         return response;
@@ -269,6 +271,7 @@ public class OrganizerServiceImpl implements OrganizerService {
         }
 
         response.setEntityList(organizersDetails);
+        response.setRemarks(String.valueOf(approvedAccounts.size()));
         response.setMessage("Approved organizer details found");
 
         return response;

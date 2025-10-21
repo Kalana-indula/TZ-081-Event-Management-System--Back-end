@@ -183,10 +183,6 @@ public class OrganizerController {
         try {
             MultipleEntityResponse<OrganizerDetailsDto> response = organizerService.getPendingOrganizers();
 
-            if(response.getEntityList() == null || response.getEntityList().isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response.getMessage());
-            }
-
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
@@ -199,10 +195,6 @@ public class OrganizerController {
         try {
             MultipleEntityResponse<OrganizerDetailsDto> response = organizerService.getApprovedOrganizers();
 
-            if(response.getEntityList() == null || response.getEntityList().isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response.getMessage());
-            }
-
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
@@ -214,10 +206,6 @@ public class OrganizerController {
     public ResponseEntity<?> findDisapprovedOrganizers() {
         try {
             MultipleEntityResponse<OrganizerDetailsDto> response = organizerService.getDisapprovedOrganizers();
-
-            if(response.getEntityList() == null || response.getEntityList().isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response.getMessage());
-            }
 
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (Exception e) {

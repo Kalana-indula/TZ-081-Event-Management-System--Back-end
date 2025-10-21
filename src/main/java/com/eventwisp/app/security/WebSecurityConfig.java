@@ -74,17 +74,32 @@ public class WebSecurityConfig {
         http.cors().and().csrf(csrf-> csrf.disable())
                 .exceptionHandling(exception->exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth->
-                        auth.requestMatchers("/api/auth/**").permitAll()
-                                .requestMatchers("/api/categories").permitAll()
-                                .requestMatchers("/api/events/sessions/latest").permitAll()
-                                .requestMatchers("/api/events/**").permitAll()
-                                .requestMatchers("/api/sessions").permitAll()
-                                .requestMatchers("/api/sessions/**").permitAll()
-                                .requestMatchers("/api/bookings").permitAll()
-                                .requestMatchers("/api/emails/booking-confirmation").permitAll()
-                                .requestMatchers("/api/payments/create-intent").permitAll()
-                                .anyRequest().authenticated());
+                .authorizeHttpRequests(auth-> auth
+//                        -------------API's required specific role based permission-------------
+                        .requestMatchers("/api/auth/managers").hasRole("ADMIN")
+                        .requestMatchers("/api/managers/assigned").hasRole("ADMIN")
+                        .requestMatchers("/api//managers/assigned").hasRole("ADMIN")
+                        .requestMatchers("/api/commission").hasRole("ADMIN")
+                        .requestMatchers("/api/platform-balance").hasRole("ADMIN")
+                        .requestMatchers("/api/system-banks").hasRole("ADMIN")
+                        .requestMatchers("/api/transactions/id/*").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers("/api/organizers/*/password").hasAnyRole("ORGANIZER")
+                        .requestMatchers("/api/organizers/*/email").hasAnyRole("ORGANIZER")
+                        .requestMatchers("/api/organizers/*/contact").hasAnyRole("ORGANIZER")
+
+
+//                        ----------Accessible endpoints-----------------
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/auth/organizers").permitAll()
+                        .requestMatchers("/api/categories").permitAll()
+                        .requestMatchers("/api/events/sessions/latest").permitAll()
+                        .requestMatchers("/api/events/**").permitAll()
+                        .requestMatchers("/api/sessions").permitAll()
+                        .requestMatchers("/api/sessions/**").permitAll()
+                        .requestMatchers("/api/bookings").permitAll()
+                        .requestMatchers("/api/emails/booking-confirmation").permitAll()
+                        .requestMatchers("/api/payments/create-intent").permitAll()
+                        .anyRequest().authenticated());
 
         http.authenticationProvider(authenticationProvider());
 

@@ -296,29 +296,28 @@ public class ManagerServiceImpl implements ManagerService {
     // remove organizer account from the system
     @Override
     public SingleEntityResponse<Boolean> removeOrganizerAccount(Long organizerId) {
+        SingleEntityResponse<Boolean> response = new SingleEntityResponse<>();
 
-        SingleEntityResponse<Boolean> response=new SingleEntityResponse<>();
-
-        //find the corresponding organizer
-        Organizer existingOrganizer=organizerRepository.findById(organizerId).orElse(null);
-
-        if(existingOrganizer==null){
+        Organizer existingOrganizer = organizerRepository.findById(organizerId).orElse(null);
+        if (existingOrganizer == null) {
             response.setMessage("Organizer not found");
             response.setEntityData(false);
             return response;
         }
 
-        //check if the organizer has active events
-        if(existingOrganizer.getActiveEventsCount()!=0){
+        int activeCount = existingOrganizer.getActiveEventsCount() == null
+                ? 0
+                : existingOrganizer.getActiveEventsCount();
+
+        if (activeCount > 0) {
             response.setMessage("Organizer already has active events");
             response.setEntityData(false);
             return response;
-        }else{
-            organizerRepository.deleteById(organizerId);
-
-            response.setMessage("Organizer deleted successfully");
-            response.setEntityData(true);
-            return response;
         }
+
+        organizerRepository.deleteById(organizerId);
+        response.setMessage("Organizer deleted successfully");
+        response.setEntityData(true);
+        return response;
     }
 }
