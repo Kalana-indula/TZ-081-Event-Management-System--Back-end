@@ -342,6 +342,7 @@ public class EventServiceImpl implements EventService {
 
         if (eventsList.isEmpty()) {
             response.setMessage("No events found");
+            response.setRemarks("0");
             response.setEntityList(new ArrayList<>());
             return response;
         }
@@ -365,6 +366,7 @@ public class EventServiceImpl implements EventService {
         }
 
         response.setEntityList(managerSideEvents);
+        response.setRemarks(String.valueOf(eventsList.size()));
         response.setMessage("Event details fetched successfully");
 
         return response;
