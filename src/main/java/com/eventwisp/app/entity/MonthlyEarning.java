@@ -1,8 +1,7 @@
 package com.eventwisp.app.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 
@@ -10,6 +9,10 @@ import java.math.BigDecimal;
 @Setter
 @Getter
 @Table(name = "monthly_earnings")
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+@Builder
 public class MonthlyEarning {
 
     @Id

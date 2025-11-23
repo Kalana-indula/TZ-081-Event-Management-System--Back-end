@@ -67,33 +67,31 @@ public class EventServiceImpl implements EventService {
     public EventCreateResponse createEvent(EventDto eventDto) {
 
         EventCreateResponse response = new EventCreateResponse();
-        //find event category
+
+        // find event category
         EventCategory category = eventCategoryRepository.findById(eventDto.getEventCategoryId()).orElse(null);
 
-        //Find organizer
+        // find organizer
         Organizer organizer = organizerRepository.findById(eventDto.getOrganizerId()).orElse(null);
 
-        //find current commission
-        FinancialData data =financialDataRepository.findById(1).orElse(null);
+        // find current commission
+        FinancialData data = financialDataRepository.findById(1).orElse(null);
 
-        if(data==null){
+        if (data == null) {
             response.setMessage("No commission values are found");
             return response;
         }
-
         if (category == null) {
             response.setMessage("Invalid Category ");
             return response;
         }
-
         if (organizer == null) {
             response.setMessage("Invalid organizer");
             return response;
         }
 
-        //Create new 'Event' object
+        // Create new 'Event' object
         Event event = new Event();
-
         event.setEventId(generateEventId());
         event.setEventName(eventDto.getEventName());
         event.setStartingDate(eventDto.getStartingDate());
@@ -127,6 +125,7 @@ public class EventServiceImpl implements EventService {
 
         return response;
     }
+
 
     //Find all events
     @Override
@@ -182,11 +181,11 @@ public class EventServiceImpl implements EventService {
 
         EventCounts eventCounts = new EventCounts();
 
-        Integer onGoingEventsCount = eventRepository.findOrganizerEventsByStatus(organizerId,3).size();
-        Integer approvedEventsCount = eventRepository.findOrganizerEventsByStatus(organizerId,5).size();
-        Integer disapprovedEventsCount = eventRepository.findOrganizerEventsByStatus(organizerId,2).size();
-        Integer pendingApprovalEventsCount = eventRepository.findOrganizerEventsByStatus(organizerId,1).size();
-        Integer completedEventsCount = eventRepository.findOrganizerEventsByStatus(organizerId,4).size();
+        Integer onGoingEventsCount = eventRepository.findOrganizerEventsByStatus(organizerId,3L).size();
+        Integer approvedEventsCount = eventRepository.findOrganizerEventsByStatus(organizerId,5L).size();
+        Integer disapprovedEventsCount = eventRepository.findOrganizerEventsByStatus(organizerId,2L).size();
+        Integer pendingApprovalEventsCount = eventRepository.findOrganizerEventsByStatus(organizerId,1L).size();
+        Integer completedEventsCount = eventRepository.findOrganizerEventsByStatus(organizerId,4L).size();
         Integer allEventsCount = eventRepository.eventsByOrganizer(organizerId).size();
 
         eventCounts.setOnGoingEventsCount(onGoingEventsCount);
@@ -338,7 +337,7 @@ public class EventServiceImpl implements EventService {
             return response;
         }
 
-        List<Event> eventsList= eventRepository.findEventByStatus(statusId);
+        List<Event> eventsList= eventRepository.findEventByStatus(Long.valueOf(statusId));
 
         if (eventsList.isEmpty()) {
             response.setMessage("No events found");
@@ -403,27 +402,27 @@ public class EventServiceImpl implements EventService {
                 .toList();
 
         // Query and map each category
-        List<EventDetailsDto> onGoingEventDetails = eventRepository.findOrganizerEventsByStatus(organizerId, 3)
+        List<EventDetailsDto> onGoingEventDetails = eventRepository.findOrganizerEventsByStatus(organizerId, 3L)
                 .stream()
                 .map(this::mapToDto)
                 .toList();
 
-        List<EventDetailsDto> approvedEventDetails = eventRepository.findOrganizerEventsByStatus(organizerId, 5)
+        List<EventDetailsDto> approvedEventDetails = eventRepository.findOrganizerEventsByStatus(organizerId, 5L)
                 .stream()
                 .map(this::mapToDto)
                 .toList();
 
-        List<EventDetailsDto> disapprovedEventDetails = eventRepository.findOrganizerEventsByStatus(organizerId, 2)
+        List<EventDetailsDto> disapprovedEventDetails = eventRepository.findOrganizerEventsByStatus(organizerId, 2L)
                 .stream()
                 .map(this::mapToDto)
                 .toList();
 
-        List<EventDetailsDto> pendingApprovalEventDetails = eventRepository.findOrganizerEventsByStatus(organizerId, 1)
+        List<EventDetailsDto> pendingApprovalEventDetails = eventRepository.findOrganizerEventsByStatus(organizerId, 1L)
                 .stream()
                 .map(this::mapToDto)
                 .toList();
 
-        List<EventDetailsDto> completedEventDetails = eventRepository.findOrganizerEventsByStatus(organizerId, 4)
+        List<EventDetailsDto> completedEventDetails = eventRepository.findOrganizerEventsByStatus(organizerId, 4L)
                 .stream()
                 .map(this::mapToDto)
                 .toList();
@@ -516,6 +515,7 @@ public class EventServiceImpl implements EventService {
     private EventDetailsDto mapToDto(Event event) {
         EventDetailsDto dto = new EventDetailsDto();
         dto.setEventId(event.getId());
+        dto.setGeneratedId(event.getEventId());
         dto.setEventName(event.getEventName());
         dto.setEventType(event.getEventCategory().getCategory());
         dto.setOrganizer(event.getOrganizer().getFirstName() + " " + event.getOrganizer().getLastName());

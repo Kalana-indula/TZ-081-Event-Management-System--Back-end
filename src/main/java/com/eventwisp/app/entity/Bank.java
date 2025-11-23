@@ -1,13 +1,16 @@
 package com.eventwisp.app.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Setter
 @Getter
 @Table(name = "bank")
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+@Builder
 public class Bank {
 
     @Id
