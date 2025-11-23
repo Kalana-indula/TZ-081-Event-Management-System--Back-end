@@ -2,13 +2,16 @@ package com.eventwisp.app.entity;
 
 import com.eventwisp.app.enums.UserRoles;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Table(name = "admin")
 @Setter
 @Getter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Data
 public class Admin {
 
     @Id

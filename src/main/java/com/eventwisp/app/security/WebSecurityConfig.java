@@ -76,7 +76,7 @@ public class WebSecurityConfig {
                 .sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth-> auth
 //                        -------------API's required specific role based permission-------------
-                        .requestMatchers("/api/auth/managers").hasRole("ADMIN")
+                        .requestMatchers("/api/auth/managers").permitAll()
                         .requestMatchers("/api/managers/assigned").hasRole("ADMIN")
                         .requestMatchers("/api//managers/assigned").hasRole("ADMIN")
                         .requestMatchers("/api/commission").hasRole("ADMIN")

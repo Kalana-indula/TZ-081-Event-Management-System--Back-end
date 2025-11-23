@@ -2,8 +2,7 @@ package com.eventwisp.app.entity;
 
 import com.eventwisp.app.enums.UserRoles;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 
@@ -11,6 +10,10 @@ import java.time.LocalDate;
 @Table(name = "manager")
 @Setter
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+@Builder
 public class Manager {
 
     @Id

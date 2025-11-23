@@ -223,6 +223,7 @@ public class OrganizerServiceImpl implements OrganizerService {
             OrganizerDetailsDto details=new OrganizerDetailsDto();
 
             details.setId(organizer.getId());
+            details.setOrganizerId(organizer.getOrganizerId());
             details.setName(organizer.getFirstName()+" "+organizer.getLastName());
             details.setNic(organizer.getNic());
             details.setEmail(organizer.getEmail());
@@ -259,6 +260,7 @@ public class OrganizerServiceImpl implements OrganizerService {
             OrganizerDetailsDto details = new OrganizerDetailsDto();
 
             details.setId(organizer.getId());
+            details.setOrganizerId(organizer.getOrganizerId());
             details.setName(organizer.getFirstName() + " " + organizer.getLastName());
             details.setNic(organizer.getNic());
             details.setEmail(organizer.getEmail());
@@ -295,6 +297,7 @@ public class OrganizerServiceImpl implements OrganizerService {
             OrganizerDetailsDto details = new OrganizerDetailsDto();
 
             details.setId(organizer.getId());
+            details.setOrganizerId(organizer.getOrganizerId());
             details.setName(organizer.getFirstName() + " " + organizer.getLastName());
             details.setNic(organizer.getNic());
             details.setEmail(organizer.getEmail());
