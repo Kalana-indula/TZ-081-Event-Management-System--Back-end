@@ -13,7 +13,7 @@ Developed using React.js for the frontend, Node.js for the backend, and MySQL fo
 
 # Db structure of the system
 
-<img alt="DB.png" src="../../../DB%20Final/DB.png"/>
+<img width="1948" height="1336" alt="DB" src="https://github.com/user-attachments/assets/70a87189-28f4-4442-b3c2-c495e5b013d8" />
 
 # UI Of the system
 
