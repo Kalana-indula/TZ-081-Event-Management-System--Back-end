@@ -26,7 +26,8 @@ Developed using React.js for the frontend, Node.js for the backend, and MySQL fo
 ## UI walkthrough video
 https://youtu.be/SEDoVyToiVs
 
-
+## User Journey Ticket booking
+https://youtu.be/3S-pkdKt4dU
 
 
 
