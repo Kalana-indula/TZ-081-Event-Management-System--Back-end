@@ -12,7 +12,8 @@ Analytics Dashboard: Insights on sales, demographics, and finances for better de
 Developed using React.js for the frontend, Node.js for the backend, and MySQL for secure data storage, the system ensures scalability for small workshops to large concerts. It reduces costs, boosts revenue through promotions, and enhances satisfaction for organizers and attendees.
 
 # Db structure of the system
-![DB.png](../../../DB%20Final/DB.png)
+
+<img alt="DB.png" src="../../../DB%20Final/DB.png"/>
 
 # UI Of the system
 
